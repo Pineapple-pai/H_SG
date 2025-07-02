@@ -13,6 +13,7 @@
     "ram": 131072,
     "rom": 1048576,
     "incDirs": [
+        ".",
         "../Core/Inc",
         "../Drivers/STM32F4xx_HAL_Driver/Inc",
         "../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
@@ -153,7 +154,6 @@
             }
         ],
         "global": {
-            "use-microLIB": false,
             "output-debug-info": "enable",
             "microcontroller-cpu": "cortex-m4-sp",
             "microcontroller-fpu": "cortex-m4-sp",
@@ -161,10 +161,9 @@
             "target": "cortex-m4-sp"
         },
         "c/cpp-compiler": {
-            "optimization": "level-1",
+            "optimization": "level-0",
             "language-c": "c99",
-            "language-cpp": "c++11",
-            "link-time-optimization": false,
+            "language-cpp": "c++17",
             "one-elf-section-per-function": true,
             "short-enums#wchar": true,
             "warnings": "ac5-like-warnings"
@@ -175,9 +174,6 @@
         "linker": {
             "output-format": "elf",
             "misc-controls": "--diag_suppress=L6329",
-            "xo-base": "",
-            "ro-base": "",
-            "rw-base": "",
             "link-scatter": [
                 "f:/H_SG/MDK-ARM/build/SG_CHASSIS_C_2024_11_5/SG_CHASSIS_C_2024_11_5.sct"
             ]
@@ -194,7 +190,7 @@
         "ConfigName": "SG_CHASSIS_C_2024_11_5",
         "ProjectRoot": "f:\\H_SG\\MDK-ARM",
         "ExecutableName": "f:\\H_SG\\MDK-ARM\\build\\SG_CHASSIS_C_2024_11_5\\SG_CHASSIS_C_2024_11_5",
-        "ChipPackDir": "",
+        "ChipPackDir": ".pack/Keil/STM32F4xx_DFP.2.14.0",
         "ChipName": "",
         "SYS_Platform": "win32",
         "SYS_DirSep": "\\",

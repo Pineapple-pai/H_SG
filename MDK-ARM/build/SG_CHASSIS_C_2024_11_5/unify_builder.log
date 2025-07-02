@@ -11076,3 +11076,89 @@ In file included from ./User/APP/Variable.cpp:1:
       |                       //
 9 warnings and 3 errors generated.
 
+[2025-07-02 19:36:47]	[info] incremental build: 73 source files changed
+These source files will be recompiled
+---
+'f:\H_SG\Core\Src\can.c': compiler options has been changed.
+'f:\H_SG\Core\Src\dma.c': compiler options has been changed.
+'f:\H_SG\Core\Src\freertos.c': compiler options has been changed.
+'f:\H_SG\Core\Src\gpio.c': compiler options has been changed.
+'f:\H_SG\Core\Src\main.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_hal_msp.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_hal_timebase_tim.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_it.c': compiler options has been changed.
+'f:\H_SG\Core\Src\system_stm32f4xx.c': compiler options has been changed.
+'f:\H_SG\Core\Src\tim.c': compiler options has been changed.
+'f:\H_SG\Core\Src\usart.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_can.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_exti.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ramfunc.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_uart.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\croutine.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\list.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\queue.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\tasks.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\timers.c': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Buzzer.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\CommunicationTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\Dji_Motor.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Dm_Motor.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\LED.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\PowerMeter.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Referee\RM_RefereeSystem.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Referee\RM_RefereeSystemCRC.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Remote\KeyBroad.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\State.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Tools.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\UI\Dynamic\darw_dynamic.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\UI\Static\darw_static.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\UI\UI_Init\Init.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\UI\UI_Queue.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Variable.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Algorithm\PID.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Algorithm\Wheel.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Algorithm\alg_slope.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Algorithm\drv_math.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\BSP_Motor.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\Bsp_Can.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\Dbus.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\Init.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\Power\PM01.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\SuperCap\SuperCap.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\HAL\HAL.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\HAL\My_HAL.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Task\CallBack.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Task\ChassisTask.cpp': source file has been changed.
+'f:\H_SG\MDK-ARM\User\Task\CommunicationTask.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Task\EvenTask.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Task\PowerTask.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\Task\RefeeTask.cpp': compiler options has been changed.
+'f:\H_SG\MDK-ARM\startup_stm32f407xx.s': source file has been changed.
+
+[2025-07-02 19:36:52]	[done]
+	build successfully !
+
+[2025-07-02 19:37:06]	[done]
+	build successfully !
+
+[2025-07-02 19:38:21]	[done]
+	build successfully !
+

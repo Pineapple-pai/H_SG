@@ -54,6 +54,8 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/APP/Variable.o
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/Algorithm/PID.o
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/Algorithm/Wheel.o
+./build/SG_CHASSIS_C_2024_11_5/.obj/User/Algorithm/alg_slope.o
+./build/SG_CHASSIS_C_2024_11_5/.obj/User/Algorithm/drv_math.o
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/BSP/BSP_Motor.o
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/BSP/Bsp_Can.o
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/BSP/Dbus.o

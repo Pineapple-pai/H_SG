@@ -345,7 +345,7 @@
   },
   "outDir": "build",
   "deviceName": null,
-  "packDir": null,
+  "packDir": ".pack/Keil/STM32F4xx_DFP.2.14.0",
   "miscInfo": {
     "uid": "b0de7d57a81bcfae400cb95251a9b65d"
   },
@@ -489,6 +489,7 @@
       "custom_dep": {
         "name": "default",
         "incList": [
+          ".",
           "../Core/Inc",
           "../Drivers/STM32F4xx_HAL_Driver/Inc",
           "../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
@@ -521,14 +522,12 @@
           "beforeBuildTasks": [],
           "afterBuildTasks": [],
           "global": {
-            "use-microLIB": false,
             "output-debug-info": "enable"
           },
           "c/cpp-compiler": {
-            "optimization": "level-1",
+            "optimization": "level-0",
             "language-c": "c99",
-            "language-cpp": "c++11",
-            "link-time-optimization": false,
+            "language-cpp": "c++17",
             "one-elf-section-per-function": true,
             "short-enums#wchar": true,
             "warnings": "ac5-like-warnings"
@@ -538,10 +537,7 @@
           },
           "linker": {
             "output-format": "elf",
-            "misc-controls": "--diag_suppress=L6329",
-            "xo-base": "",
-            "ro-base": "",
-            "rw-base": ""
+            "misc-controls": "--diag_suppress=L6329"
           }
         }
       }

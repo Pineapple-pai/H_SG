@@ -76,7 +76,7 @@ public:
             std::make_unique<T>(std::forward<Args>(args)...));
         return true;
     }
-
+                
     /**
      * @brief 更新所有任务
      * @detail 按添加顺序调用各任务的update()

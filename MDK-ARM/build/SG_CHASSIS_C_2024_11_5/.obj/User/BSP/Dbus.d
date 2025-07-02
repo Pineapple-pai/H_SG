@@ -1,6 +1,6 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/BSP/Dbus.o: User\BSP\Dbus.cpp \
-  User\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp User\BSP\Key.hpp \
-  User\BSP\stdxxx.hpp \
+  User\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp \
+  User\BSP\..\BSP\Key.hpp User\BSP\..\BSP\stdxxx.hpp \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
