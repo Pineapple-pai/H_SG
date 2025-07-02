@@ -497,7 +497,7 @@
           "../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F",
           "../Drivers/CMSIS/Device/ST/STM32F4xx/Include",
           "../Drivers/CMSIS/Include",
-          "../../../../AppData/Local/Arm/Packs/ARM/CMSIS-DSP/1.15.0/Include",
+          "../../AppData/Local/Arm/Packs/ARM/CMSIS-DSP/1.15.0/Include",
           "../Middlewares/ST/ARM/DSP/Inc",
           "User/APP",
           "User/BSP",

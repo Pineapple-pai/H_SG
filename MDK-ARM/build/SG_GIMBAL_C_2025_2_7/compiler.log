@@ -1,0 +1,14 @@
+>>> cc
+
+Warning: A1950W: The legacy armasm assembler is deprecated. Consider using the armclang integrated assembler instead.
+0 Errors, 1 Warning
+
+>>> ld
+
+Error: L6218E: Undefined symbol MX_USB_DEVICE_Init (referred from freertos.o).
+Error: L6218E: Undefined symbol hpcd_USB_OTG_FS (referred from stm32f4xx_it.o).
+Error: L6218E: Undefined symbol HAL_PCD_IRQHandler (referred from stm32f4xx_it.o).
+Error: L6218E: Undefined symbol CDC_Transmit_FS (referred from CommunicationTask.o).
+Error: L6218E: Undefined symbol CDC_Receive_FS (referred from CommunicationTask.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 5 error messages.

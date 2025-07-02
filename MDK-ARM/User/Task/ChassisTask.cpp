@@ -12,7 +12,9 @@
 #include "../APP/UI/UI_Queue.hpp"
 #include "../BSP/Dbus.hpp"
 #include "../BSP/Power/PM01.hpp"
+
 TaskManager taskManager;
+
 
 void ChassisTask(void *argument)
 {
@@ -28,7 +30,7 @@ void ChassisTask(void *argument)
 }
 
 float tar_vw_angle = 3.1415926535f;
-
+float ROTATION_BIAS = 0.1f;
 //=== 状态处理器实现 ===//
 class Chassis_Task::UniversalHandler : public StateHandler
 {
@@ -217,8 +219,8 @@ class Chassis_Task::RotatingHandler : public StateHandler
 
     void RotatingTarget()
     {
-        auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
-        auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS);
+        auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS);
 
         tar_vx.Calc(TAR_LX * 660);
         tar_vy.Calc(TAR_LY * 660);
@@ -387,7 +389,7 @@ float ude_tar;
 void Chassis_Task::Wheel_UpData()
 {
     // 对轮子进行运动学变换
-    Wheel.WheelType.UpDate(Chassis_Data.vx, Chassis_Data.vy, Chassis_Data.vw, 3000);
+    Wheel.WheelType.UpDate(Chassis_Data.vx, Chassis_Data.vy, Chassis_Data.vw, 2000);
 
     // 储存最小角判断的速度
     for (int i = 0; i < 4; i++)
@@ -397,7 +399,7 @@ void Chassis_Task::Wheel_UpData()
 
     // 储存最小角判断的角度
     for (int i = 0; i < 4; i++)
-    {
+    {					
         Chassis_Data.tar_angle[i] = Wheel.WheelType.angle[i];
     }
 

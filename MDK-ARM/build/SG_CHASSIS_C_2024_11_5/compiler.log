@@ -1,0 +1,424 @@
+>>> cc
+
+In file included from ./User/APP/Remote/KeyBroad.cpp:1:
+In file included from User/APP\../APP/Remote/KeyBroad.hpp:2:
+User/APP\../BSP/Dbus.hpp:10:15: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+   10 | namespace BSP ::Remote
+      |               ^~~~~~~~
+      |                { namespace Remote
+In file included from ./User/APP/Remote/KeyBroad.cpp:1:
+User/APP\../APP/Remote/KeyBroad.hpp:7:14: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    7 | namespace APP::Remote
+      |              ^~~~~~~~
+      |               { namespace Remote
+./User/APP/Remote/KeyBroad.cpp:3:14: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    3 | namespace APP::Remote
+      |              ^~~~~~~~
+      |               { namespace Remote
+3 warnings generated.
+In file included from ./User/APP/CommunicationTask.cpp:3:
+In file included from ./User/APP/Variable.hpp:7:
+./User/APP/State.hpp:76:18: error: no member named 'make_unique' in namespace 'std'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |             ~~~~~^
+./User/APP/State.hpp:76:30: error: 'T' does not refer to a value
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                              ^
+./User/APP/State.hpp:69:24: note: declared here
+   69 |     template <typename T, typename... Args>
+      |                        ^
+./User/APP/State.hpp:76:57: error: expected ')'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                                         ^
+./User/APP/State.hpp:76:32: note: to match this '('
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                ^
+In file included from ./User/APP/CommunicationTask.cpp:3:
+In file included from ./User/APP/Variable.hpp:9:
+In file included from User/Task\PowerTask.hpp:3:
+In file included from User/Algorithm\RLS.hpp:2:
+User/Algorithm/Matrix.hpp:23:60: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   23 |     constexpr Matrixf(void) : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }
+      |                                                            ^
+User/Algorithm/Matrix.hpp:31:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   31 |         memcpy(this->data_, data, _rows * _cols * sizeof(float));
+      |         ^
+User/Algorithm/Matrix.hpp:41:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   41 |         memcpy(this->data_, mat.data_, _rows * _cols * sizeof(float));
+      |         ^
+In file included from ./User/APP/CommunicationTask.cpp:3:
+In file included from ./User/APP/Variable.hpp:9:
+In file included from User/Task\PowerTask.hpp:3:
+User/Algorithm\RLS.hpp:28:13: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   28 |             this->reset();
+      |             ^
+User/Algorithm\RLS.hpp:32:104: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   32 |         constexpr RLS(float delta_, float lambda_, Matrixf<dim, 1> initParam) : RLS(delta_, lambda_) { defaultParamsVector = initParam; }
+      |                                                                                                        ^
+In file included from ./User/APP/CommunicationTask.cpp:3:
+./User/APP/Variable.hpp:12:23: warning: missing terminating '"' character [-Winvalid-pp-token]
+   12 | #include "alg_slope.h""
+      |                       ^
+./User/APP/Variable.hpp:12:23: warning: extra tokens at end of #include directive [-Wextra-tokens]
+   12 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+7 warnings and 3 errors generated.
+In file included from ./User/APP/UI/Static/darw_static.cpp:1:
+./User/APP/UI/Static/../Static/darw_static.hpp:3:13: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    3 | namespace UI::Static
+      |             ^~~~~~~~
+      |              { namespace Static
+./User/APP/UI/Static/../Static/darw_static.hpp:18:1: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+   18 | inline darw_static UI_static;
+      | ^
+In file included from ./User/APP/UI/Static/darw_static.cpp:2:
+./User/APP/UI/Static/../UI_Queue.hpp:155:5: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+  155 |     inline send_graphic_queue UI_send_queue;
+      |     ^
+In file included from ./User/APP/UI/Static/darw_static.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:3:
+In file included from User/Algorithm\RLS.hpp:2:
+User/Algorithm/Matrix.hpp:23:60: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   23 |     constexpr Matrixf(void) : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }
+      |                                                            ^
+User/Algorithm/Matrix.hpp:31:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   31 |         memcpy(this->data_, data, _rows * _cols * sizeof(float));
+      |         ^
+User/Algorithm/Matrix.hpp:41:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   41 |         memcpy(this->data_, mat.data_, _rows * _cols * sizeof(float));
+      |         ^
+In file included from ./User/APP/UI/Static/darw_static.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:3:
+User/Algorithm\RLS.hpp:28:13: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   28 |             this->reset();
+      |             ^
+User/Algorithm\RLS.hpp:32:104: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   32 |         constexpr RLS(float delta_, float lambda_, Matrixf<dim, 1> initParam) : RLS(delta_, lambda_) { defaultParamsVector = initParam; }
+      |                                                                                                        ^
+In file included from ./User/APP/UI/Static/darw_static.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:4:
+In file included from User/APP\Variable.hpp:7:
+User/APP/State.hpp:76:18: error: no member named 'make_unique' in namespace 'std'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |             ~~~~~^
+User/APP/State.hpp:76:30: error: 'T' does not refer to a value
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                              ^
+User/APP/State.hpp:69:24: note: declared here
+   69 |     template <typename T, typename... Args>
+      |                        ^
+User/APP/State.hpp:76:57: error: expected ')'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                                         ^
+User/APP/State.hpp:76:32: note: to match this '('
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                ^
+In file included from ./User/APP/UI/Static/darw_static.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:4:
+User/APP\Variable.hpp:12:23: warning: missing terminating '"' character [-Winvalid-pp-token]
+   12 | #include "alg_slope.h""
+      |                       ^
+User/APP\Variable.hpp:12:23: warning: extra tokens at end of #include directive [-Wextra-tokens]
+   12 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+In file included from ./User/APP/UI/Static/darw_static.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:9:
+In file included from User/APP\../Task/CommunicationTask.hpp:3:
+User/APP\../Task/../BSP/Dbus.hpp:10:15: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+   10 | namespace BSP ::Remote
+      |               ^~~~~~~~
+      |                { namespace Remote
+In file included from ./User/APP/UI/Static/darw_static.cpp:3:
+User/APP\../BSP/Power/PM01.hpp:12:14: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+   12 | namespace BSP::Power
+      |              ^~~~~~~
+      |               { namespace Power
+User/APP\../BSP/Power/PM01.hpp:179:5: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+  179 |     inline RM_PM01 pm01;
+      |     ^
+In file included from ./User/APP/UI/Static/darw_static.cpp:4:
+User/APP\../BSP/SuperCap/SuperCap.hpp:6:14: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    6 | namespace BSP::SuperCap
+      |              ^~~~~~~~~~
+      |               { namespace SuperCap
+User/APP\../BSP/SuperCap/SuperCap.hpp:151:1: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+  151 | inline LH_Cap cap;
+      | ^
+./User/APP/UI/Static/darw_static.cpp:9:13: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    9 | namespace UI::Static
+      |             ^~~~~~~~
+      |              { namespace Static
+./User/APP/UI/Static/darw_static.cpp:42:71: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   42 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("W", 0, 954, 495, 6));
+      |                                                                       ^
+./User/APP/UI/Static/darw_static.cpp:59:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   59 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("power", 1, 100, 100 + 2, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:63:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   63 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("limPower", 1, 120, 120 + 2, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:67:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   67 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("cd_Init", 3, 271, 310, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:71:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   71 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("gyro_Init", 2, 0, 360, 1450, 750, 80, 80));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:75:69: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   75 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("dp1", 0, 1450, 690, 1450, 750 + 61));
+      |                                                                     ^
+./User/APP/UI/Static/darw_static.cpp:81:68: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   81 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("p", 0, BSP::SuperCap::cap.getOutPower(), ZM_of_X, ZM_of_Y));
+      |                                                                    ^
+./User/APP/UI/Static/darw_static.cpp:90:71: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   90 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, Gimbal_to_Chassis_Data.getAimX() * 2.72 + 615, Gimbal_to_Chassis_Data.getAimY() * 2.05 + 265, 12));
+      |                                                                       ^
+./User/APP/UI/Static/darw_static.cpp:96:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   96 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_130", 0, 50, 51, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:98:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   98 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_120", 1, 60, 61, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:100:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  100 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_110", 2, 70, 71, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:102:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  102 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_100", 3, 80, 81, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:104:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  104 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_90", 4, 90, 91, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:106:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  106 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_80", 5, 100, 101, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:108:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  108 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_60", 6, 110, 111, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:110:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  110 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_50", 7, 120, 121, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:112:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  112 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("angle_50", 8, 130, 131, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Static/darw_static.cpp:118:68: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  118 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_130", 0, 120, 1210, 770));
+      |                                                                    ^
+./User/APP/UI/Static/darw_static.cpp:119:68: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  119 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_110", 1, 90, 1270, 660));
+      |                                                                    ^
+./User/APP/UI/Static/darw_static.cpp:120:68: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  120 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_90", 2, 60, 1300, 540));
+      |                                                                    ^
+./User/APP/UI/Static/darw_static.cpp:121:68: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  121 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_70", 3, 30, 1280, 420));
+      |                                                                    ^
+./User/APP/UI/Static/darw_static.cpp:122:68: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  122 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("write_50", 4, 0, 1210, 310));
+      |                                                                    ^
+./User/APP/UI/Static/darw_static.cpp:128:69: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  128 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("cd1", 2, 570, 540, 595, 540));
+      |                                                                     ^
+./User/APP/UI/Static/darw_static.cpp:132:69: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  132 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("cd2", 2, 673, 800, 690, 785));
+      |                                                                     ^
+./User/APP/UI/Static/darw_static.cpp:137:71: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  137 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("xtl_in", 2, 1450, 750, 67));
+      |                                                                       ^
+./User/APP/UI/Static/darw_static.cpp:142:60: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  142 |             RM_RefereeSystem::RM_RefereeSystemSetRectangle("dp9", 2, 1450 - 20, 750 - 61, 1450 + 20, 750 + 62));
+      |                                                            ^
+./User/APP/UI/Static/darw_static.cpp:146:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  146 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("vis", 2, 166, 193, 956, 520, 360, 360));
+      |                                                                      ^
+43 warnings and 3 errors generated.
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:1:
+User/APP\../APP/UI/Dynamic/darw_dynamic.hpp:3:13: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    3 | namespace UI::Dynamic
+      |             ^~~~~~~~~
+      |              { namespace Dynamic
+    4 | {
+    5 |     class darw_dynamic
+    6 |     {
+    7 |     public:
+    8 |         void setLimitPower();
+    9 |         void curPower();
+   10 |         void VisionMode();
+   11 |         void VisionArmor();
+   12 |         void darw_UI();
+   13 |     };
+   14 | 
+   15 |     inline darw_dynamic UI_dynamic;
+   16 | }
+      | } 
+User/APP\../APP/UI/Dynamic/darw_dynamic.hpp:15:5: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+   15 |     inline darw_dynamic UI_dynamic;
+      |     ^
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:2:
+In file included from User/APP\../Task/CommunicationTask.hpp:3:
+User/APP\../Task/../BSP/Dbus.hpp:10:15: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+   10 | namespace BSP ::Remote
+      |               ^~~~~~~~
+      |                { namespace Remote
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:3:
+In file included from User/Algorithm\RLS.hpp:2:
+User/Algorithm/Matrix.hpp:23:60: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   23 |     constexpr Matrixf(void) : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }
+      |                                                            ^
+User/Algorithm/Matrix.hpp:31:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   31 |         memcpy(this->data_, data, _rows * _cols * sizeof(float));
+      |         ^
+User/Algorithm/Matrix.hpp:41:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   41 |         memcpy(this->data_, mat.data_, _rows * _cols * sizeof(float));
+      |         ^
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:3:
+User/Algorithm\RLS.hpp:28:13: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   28 |             this->reset();
+      |             ^
+User/Algorithm\RLS.hpp:32:104: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   32 |         constexpr RLS(float delta_, float lambda_, Matrixf<dim, 1> initParam) : RLS(delta_, lambda_) { defaultParamsVector = initParam; }
+      |                                                                                                        ^
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:4:
+In file included from User/APP\Variable.hpp:7:
+User/APP/State.hpp:76:18: error: no member named 'make_unique' in namespace 'std'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |             ~~~~~^
+User/APP/State.hpp:76:30: error: 'T' does not refer to a value
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                              ^
+User/APP/State.hpp:69:24: note: declared here
+   69 |     template <typename T, typename... Args>
+      |                        ^
+User/APP/State.hpp:76:57: error: expected ')'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                                         ^
+User/APP/State.hpp:76:32: note: to match this '('
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                ^
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:3:
+In file included from User/APP\../BSP/Power/PM01.hpp:4:
+In file included from User/APP\../Task/PowerTask.hpp:4:
+User/APP\Variable.hpp:12:23: warning: missing terminating '"' character [-Winvalid-pp-token]
+   12 | #include "alg_slope.h""
+      |                       ^
+User/APP\Variable.hpp:12:23: warning: extra tokens at end of #include directive [-Wextra-tokens]
+   12 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:3:
+User/APP\../BSP/Power/PM01.hpp:12:14: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+   12 | namespace BSP::Power
+      |              ^~~~~~~
+      |               { namespace Power
+User/APP\../BSP/Power/PM01.hpp:179:5: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+  179 |     inline RM_PM01 pm01;
+      |     ^
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:4:
+./User/APP/UI/Dynamic/../UI_Queue.hpp:155:5: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+  155 |     inline send_graphic_queue UI_send_queue;
+      |     ^
+In file included from ./User/APP/UI/Dynamic/darw_dynamic.cpp:10:
+User/APP\../BSP/SuperCap/SuperCap.hpp:6:14: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+    6 | namespace BSP::SuperCap
+      |              ^~~~~~~~~~
+      |               { namespace SuperCap
+User/APP\../BSP/SuperCap/SuperCap.hpp:151:1: warning: inline variables are a C++17 extension [-Wc++17-extensions]
+  151 | inline LH_Cap cap;
+      | ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:19:13: warning: nested namespace definition is a C++17 extension; define each namespace separately [-Wc++17-extensions]
+   19 | namespace UI::Dynamic
+      |             ^~~~~~~~~
+      |              { namespace Dynamic
+./User/APP/UI/Dynamic/darw_dynamic.cpp:30:74: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   30 |             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("limPower", 1, limit_power, limit_power + 2, 960, 540, 380, 380));
+      |                                                                          ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:83:70: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   83 |         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("cd_Init", 3, 271, 271 + super_cap, 960, 540, 380, 380));
+      |                                                                      ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:99:79: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+   99 |                 UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, aimX * 2.75 + 580, aimY * 2.05 + 275, 20));
+      |                                                                               ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:104:75: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  104 |             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, aimX * 2.75 + 580, aimY * 2.05 + 275, 20));
+      |                                                                           ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:108:75: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  108 |             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, aimX * 2.75 + 580, aimY * 2.05 + 275, 20));
+      |                                                                           ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:140:74: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  140 |             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("power", 1, power, power + 2, 960, 540, 380, 380));
+      |                                                                          ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:153:74: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  153 |             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("gyro_Init", 2, yaw_e_rad + 210, yaw_e_rad + 160, 1450, 750, 80, 80));
+      |                                                                          ^
+./User/APP/UI/Dynamic/darw_dynamic.cpp:159:73: warning: ISO C++11 does not allow conversion from string literal to 'char *' [-Wwritable-strings]
+  159 |             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetLine("dp1", 0, 1450, 690, 1450, vel + 690));
+      |                                                                         ^
+24 warnings and 3 errors generated.
+In file included from ./User/APP/Variable.cpp:1:
+In file included from ./User/APP/Variable.hpp:7:
+./User/APP/State.hpp:76:18: error: no member named 'make_unique' in namespace 'std'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |             ~~~~~^
+./User/APP/State.hpp:76:30: error: 'T' does not refer to a value
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                              ^
+./User/APP/State.hpp:69:24: note: declared here
+   69 |     template <typename T, typename... Args>
+      |                        ^
+./User/APP/State.hpp:76:57: error: expected ')'
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                                         ^
+./User/APP/State.hpp:76:32: note: to match this '('
+   76 |             std::make_unique<T>(std::forward<Args>(args)...));
+      |                                ^
+In file included from ./User/APP/Variable.cpp:1:
+In file included from ./User/APP/Variable.hpp:9:
+In file included from User/Task\PowerTask.hpp:3:
+In file included from User/Algorithm\RLS.hpp:2:
+User/Algorithm/Matrix.hpp:23:60: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   23 |     constexpr Matrixf(void) : rows_(_rows), cols_(_cols) { arm_mat_init_f32(&arm_mat_, _rows, _cols, this->data_); }
+      |                                                            ^
+User/Algorithm/Matrix.hpp:31:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   31 |         memcpy(this->data_, data, _rows * _cols * sizeof(float));
+      |         ^
+User/Algorithm/Matrix.hpp:41:9: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   41 |         memcpy(this->data_, mat.data_, _rows * _cols * sizeof(float));
+      |         ^
+In file included from ./User/APP/Variable.cpp:1:
+In file included from ./User/APP/Variable.hpp:9:
+In file included from User/Task\PowerTask.hpp:3:
+User/Algorithm\RLS.hpp:28:13: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   28 |             this->reset();
+      |             ^
+User/Algorithm\RLS.hpp:32:104: warning: use of this statement in a constexpr constructor is a C++14 extension [-Wc++14-extensions]
+   32 |         constexpr RLS(float delta_, float lambda_, Matrixf<dim, 1> initParam) : RLS(delta_, lambda_) { defaultParamsVector = initParam; }
+      |                                                                                                        ^
+In file included from ./User/APP/Variable.cpp:1:
+./User/APP/Variable.hpp:12:23: warning: missing terminating '"' character [-Winvalid-pp-token]
+   12 | #include "alg_slope.h""
+      |                       ^
+./User/APP/Variable.hpp:12:23: warning: extra tokens at end of #include directive [-Wextra-tokens]
+   12 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+./User/APP/Variable.cpp:3:23: warning: missing terminating '"' character [-Winvalid-pp-token]
+    3 | #include "alg_slope.h""
+      |                       ^
+./User/APP/Variable.cpp:3:23: warning: extra tokens at end of #include directive [-Wextra-tokens]
+    3 | #include "alg_slope.h""
+      |                       ^
+      |                       //
+9 warnings and 3 errors generated.
+
+>>> ld
+

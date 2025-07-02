@@ -1,7 +1,9 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/APP/Referee/RM_RefereeSystem.o: \
   User\APP\Referee\RM_RefereeSystem.cpp \
-  User\APP\Referee\RM_RefereeSystem.h ..\Core\Inc\usart.h \
-  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  User\APP\Referee\RM_RefereeSystem.h \
+  User\APP\Referee\..\Referee\RM_RefereeSystemCRC.h \
+  User\APP\..\BSP\stdxxx.hpp ..\Core\Inc\usart.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
@@ -26,7 +28,5 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  User\APP\Referee\..\Referee\RM_RefereeSystemCRC.h \
-  User\APP\..\BSP\stdxxx.hpp \
   User\APP\..\APP\Referee\RM_RefereeSystemCRC.h \
-  User\APP\..\BSP\StaticTime.hpp User\BSP\Key.hpp User\BSP\stdxxx.hpp
+  User\APP\..\BSP\StaticTime.hpp User\APP\..\BSP\Key.hpp

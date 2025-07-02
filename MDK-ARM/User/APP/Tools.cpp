@@ -1,6 +1,6 @@
 #include "Tools.hpp"
 #include "usart.h"
-
+#define DEAD_ZONE_6020 1.0f
 /**
  * @brief 用于vofa发送波形数据
  *
@@ -87,6 +87,10 @@ double Tools_t::MinPosHelm(float expectations, float feedback, float *speed, flo
     x1 = tempcin;
     x2 = tempcin + 8191 / 2;
     x3 = feedback;
+    float error = expectations - feedback;
+    if (fabs(error) < DEAD_ZONE_6020) {
+        return feedback; // 如果误差在死区内，返回反馈值
+    }
     if (tempcin < 0)
         x3 -= maxpos;
     // 过0处理
