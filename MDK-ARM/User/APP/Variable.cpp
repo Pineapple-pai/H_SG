@@ -21,20 +21,20 @@ PowerMeter::Meter_Data _MeterPowerData_[_PowerMeter_SIZE] = {0}; uint8_t _PowerM
 PowerMeter::Meter MeterPower(0x210, _PowerMeter_SIZE, _MeterPowerData_, _PowerMeter_ID_);
 
 // PID角度环设置
-Kpid_t Kpid_6020_angle(0.15, 0, 0);
+Kpid_t Kpid_6020_angle(0.2, 0, 0);
 PID pid_angle_String[4];
 
 // PID角度环设置
-Kpid_t Kpid_6020_vel(60, 0, 0);
+Kpid_t Kpid_6020_vel(80, 0, 0);
 PID pid_vel_String[4];
 
-Kpid_t ude_Kpid_angle(0.15, 0, 0);
+Kpid_t ude_Kpid_angle(0.2, 0, 0);
 PID ude_angle_demo;
-Kpid_t ude_Kpid_vel(12, 0, 0);
+Kpid_t ude_Kpid_vel(15, 0, 0);
 PID ude_vel_demo;
 
 //底盘跟随环
-Kpid_t Kpid_vw(-400, 0, -5);
+Kpid_t Kpid_vw(-100, 0, -5);
 PID pid_vw;
 
 // PID速度环设置

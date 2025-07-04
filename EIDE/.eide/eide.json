@@ -2,7 +2,9 @@
   "name": "SG_CHASSIS_C_2024_11_5",
   "type": "ARM",
   "dependenceList": [],
-  "srcDirs": [],
+  "srcDirs": [
+    "../MDK-ARM/User"
+  ],
   "virtualFolder": {
     "name": "<virtual_root>",
     "files": [],

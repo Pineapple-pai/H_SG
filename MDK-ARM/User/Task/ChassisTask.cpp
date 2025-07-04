@@ -13,7 +13,7 @@
 #include "../BSP/Dbus.hpp"
 #include "../BSP/Power/PM01.hpp"
 TaskManager taskManager;
-int16_t ROTATION_BIAS (0.1f);
+
 
 void ChassisTask(void *argument)
 {
@@ -206,7 +206,7 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         m_task.CAN_Send();
     }
 };
-
+float ROTATION_BIAS = 0.365f;
 class Chassis_Task::RotatingHandler : public StateHandler
 {
   public:
@@ -388,7 +388,7 @@ float ude_tar;
 void Chassis_Task::Wheel_UpData()
 {
     // 对轮子进行运动学变换
-    Wheel.WheelType.UpDate(Chassis_Data.vx, Chassis_Data.vy, Chassis_Data.vw, 3000);
+    Wheel.WheelType.UpDate(Chassis_Data.vx, Chassis_Data.vy, Chassis_Data.vw, 6000);
 
     // 储存最小角判断的速度
     for (int i = 0; i < 4; i++)
@@ -487,20 +487,20 @@ void Chassis_Task::CAN_Setting()
         Chassis_Data.final_3508_Out[i] = pid_vel_Wheel[i].GetCout();
     }
 
-    // 功率控制部分
-    if (Dir_Event.GetDir_String() == false)
-    {
-        PowerControl.String_PowerData.UpScaleMaxPow(pid_angle_String, Motor6020);
-        PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_6020_Out, Motor6020, pid_vel_String,
-                                                      toque_const_6020, rpm_to_rads_6020);
-    }
+//    // 功率控制部分
+//    if (Dir_Event.GetDir_String() == false)
+//    {
+//        PowerControl.String_PowerData.UpScaleMaxPow(pid_angle_String, Motor6020);
+//        PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_6020_Out, Motor6020, pid_vel_String,
+//                                                      toque_const_6020, rpm_to_rads_6020);
+//    }
 
-    if (Dir_Event.GetDir_Wheel() == false)
-    {
-        PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel, Motor3508);
-        PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, Motor3508, pid_vel_Wheel,
-                                                     toque_const_3508, rpm_to_rads_3508);
-    }
+//    if (Dir_Event.GetDir_Wheel() == false)
+//    {
+//        PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel, Motor3508);
+//        PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, Motor3508, pid_vel_Wheel,
+//                                                     toque_const_3508, rpm_to_rads_3508);
+//    }
     Motor6020.setMSD(&msd_6020, Chassis_Data.final_6020_Out[0], Get_MOTOR_SET_ID_6020(0x205));
     Motor6020.setMSD(&msd_6020, Chassis_Data.final_6020_Out[1], Get_MOTOR_SET_ID_6020(0x206));
     Motor6020.setMSD(&msd_6020, Chassis_Data.final_6020_Out[2], Get_MOTOR_SET_ID_6020(0x207));
