@@ -11162,3 +11162,30 @@ These source files will be recompiled
 [2025-07-02 19:38:21]	[done]
 	build successfully !
 
+[2025-07-04 16:54:12]	[info] incremental build: 11 source files changed
+These source files will be recompiled
+---
+'f:\H_SG\MDK-ARM\User\APP\CommunicationTask.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Tools.cpp': source file has been changed.
+'f:\H_SG\MDK-ARM\User\APP\UI\Dynamic\darw_dynamic.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\APP\UI\Static\darw_static.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Variable.cpp': source file has been changed.
+'f:\H_SG\MDK-ARM\User\BSP\Init.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\HAL\My_HAL.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\Task\CallBack.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\Task\ChassisTask.cpp': source file has been changed.
+'f:\H_SG\MDK-ARM\User\Task\EvenTask.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+'f:\H_SG\MDK-ARM\User\Task\PowerTask.cpp': dependence 'f:\H_SG\MDK-ARM\User\APP\State.hpp' has been changed.
+
+[2025-07-04 16:54:15]	[done]
+	build successfully !
+
+[2025-07-04 16:55:32]	[done]
+	build successfully !
+
+[2025-07-04 16:55:52]	[done]
+	build successfully !
+
+[2025-07-04 16:57:48]	[done]
+	build successfully !
+
