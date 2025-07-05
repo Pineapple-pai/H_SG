@@ -92,8 +92,8 @@ Tools_t Tools;
 Chassis_Data_t Chassis_Data;
 
 //斜坡规划
-Class_Slope slope_vx(4.0f, 4.0f, Slope_First_REAL);  // X方向速度
-Class_Slope slope_vy(4.0f, 4.0f, Slope_First_REAL);  // Y方向速度  
+Class_Slope slope_vx(3.0f, 2.5f, Slope_First_REAL);  // X方向速度
+Class_Slope slope_vy(3.0f, 2.5f, Slope_First_REAL);  // Y方向速度  
 Class_Slope slope_vw(1.0f, 1.0f, Slope_First_REAL);    // 旋转速度
 
 // PM01 pm01;
