@@ -269,7 +269,9 @@ class Chassis_Task::StopHandler : public StateHandler
     {
         // 执行急停相关操作
         // Base_UpData();
-        m_task.Tar_Updata();
+        m_task.Tar_Updata();    
+        m_task.Wheel_UpData();                           
+        m_task.PID_Updata();
 
         // 设置目标为0并增大减量值
         slope_vx.Set_Target(0);
@@ -280,6 +282,11 @@ class Chassis_Task::StopHandler : public StateHandler
         Chassis_Data.vx = slope_vx.Get_Out();
         Chassis_Data.vy = slope_vy.Get_Out();
         Chassis_Data.vw = slope_vw.Get_Out();
+
+        // 更新斜坡输出
+        slope_vx.TIM_Calculate_PeriodElapsedCallback();
+        slope_vy.TIM_Calculate_PeriodElapsedCallback();
+        slope_vw.TIM_Calculate_PeriodElapsedCallback();
         
         // PID_Updata();
 
