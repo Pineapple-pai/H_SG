@@ -147,3 +147,4 @@ float Tools_t::clamp(float value, float maxValue, float miniValue)
 
     return value;
 }
+

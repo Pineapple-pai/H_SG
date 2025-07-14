@@ -20,4 +20,5 @@ public:
 
     double GetMachinePower(double T, double Vel);
     float clamp(float value, float maxValue, float miniValue);
+    float NormalizeAngle(float angle); 
 };

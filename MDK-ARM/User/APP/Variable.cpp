@@ -1,6 +1,6 @@
 #include "Variable.hpp"
 #include "My_hal.hpp"
-#include "alg_slope.h""
+#include "alg_slope.h"
 uint32_t Send_ms;
 
 // 存储发送的数据
@@ -92,8 +92,8 @@ Tools_t Tools;
 Chassis_Data_t Chassis_Data;
 
 //斜坡规划
-Class_Slope slope_vx(2.0f, 2.2f, Slope_First_REAL);  // X方向速度
-Class_Slope slope_vy(2.0f, 2.2f, Slope_First_REAL);  // Y方向速度  
+Class_Slope slope_vx(2.0f, 2.5f, Slope_First_REAL);  // X方向速度
+Class_Slope slope_vy(2.0f, 2.5f, Slope_First_REAL);  // Y方向速度  
 Class_Slope slope_vw(1.5f, 1.5f, Slope_First_REAL);    // 旋转速度
 
 // PM01 pm01;

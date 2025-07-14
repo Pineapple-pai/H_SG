@@ -1,5 +1,7 @@
 #pragma once
 #include "../APP/State.hpp"
+#include "../Algorithm/alg_slope.h"
+#include "Variable.hpp"
 /**
  * @brief 底盘控制任务
  * @detail 实现移动底盘的状态控制逻辑
@@ -35,10 +37,14 @@ class Chassis_Task : public Task
     class KeyBoardHandler;
 
     class StopHandler;
-
+    int getRearWheelIndex();    
+    Class_Slope slope_speed[4];
     // 成员变量
     State m_currentState = State::UniversalState;
     std::unique_ptr<StateHandler> m_stateHandler; // 当前状态处理器
+    void getRearWheels(int rearIndices[4]);
+
+    void applyRearBrake(float brakeFactor);
 
     void Tar_Updata();
 

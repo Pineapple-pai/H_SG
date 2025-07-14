@@ -9,7 +9,7 @@
 #include "PowerTask.hpp"
 #include "EvenTask.hpp"
 #include "PowerMeter.hpp"
-#include "alg_slope.h""
+#include "alg_slope.h"
 
 // 发送id
 #define SEND_MOTOR_ID_2006 (0x200)
@@ -49,7 +49,7 @@
 
 #define Chassis_angle_Init_0x205 5083 
 #define Chassis_angle_Init_0x206 5853
-#define Chassis_angle_Init_0x207 2405
+#define Chassis_angle_Init_0x207 3704 + 4096
 #define Chassis_angle_Init_0x208 5759
 
 typedef struct
@@ -136,6 +136,7 @@ extern Tools_t Tools;
 extern Chassis_Data_t Chassis_Data;
 
 extern Class_Slope slope_vx, slope_vy, slope_vw;  // 仅用于速度斜坡
+
 
 // extern PM01 pm01;
 
