@@ -27,7 +27,7 @@ void ChassisTask(void *argument)
         osDelay(2);
     }
 }
-
+float k = 0.0f;
 float tar_vw_angle = 3.1415926535f;
 
 //=== 状态处理器实现 ===//
@@ -206,7 +206,11 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         m_task.CAN_Send();
     }
 };
+<<<<<<< Updated upstream
 float ROTATION_BIAS = 0.1f;
+=======
+
+>>>>>>> Stashed changes
 class Chassis_Task::RotatingHandler : public StateHandler
 {
   public:
@@ -218,8 +222,13 @@ class Chassis_Task::RotatingHandler : public StateHandler
 
     void RotatingTarget()
     {
+<<<<<<< Updated upstream
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
+=======
+        auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + k * Chassis_Data.vw);
+        auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + k * Chassis_Data.vw);
+>>>>>>> Stashed changes
 
         tar_vx.Calc(TAR_LX * 660);
         tar_vy.Calc(TAR_LY * 660);
