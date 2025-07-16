@@ -14,6 +14,7 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\freertos_mpool.h \

@@ -1,7 +1,7 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/APP/Remote/KeyBroad.o: \
   User\APP\Remote\KeyBroad.cpp User\APP\..\APP\Remote\KeyBroad.hpp \
-  User\APP\..\BSP\Dbus.hpp User\APP\..\BSP\..\BSP\StaticTime.hpp \
-  User\APP\..\BSP\..\BSP\Key.hpp User\APP\..\BSP\..\BSP\stdxxx.hpp \
+  User\APP\..\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp \
+  User\BSP\Key.hpp User\BSP\stdxxx.hpp \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \

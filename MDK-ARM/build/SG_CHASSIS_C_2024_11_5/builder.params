@@ -3,7 +3,7 @@
     "target": "SG_CHASSIS_C_2024_11_5",
     "toolchain": "AC6",
     "toolchainLocation": "D:\\Keil_V5\\ARM\\ARMCLANG",
-    "toolchainCfgFile": "c:\\Users\\25444\\.vscode\\extensions\\cl.eide-3.21.5\\res\\data\\models\\win32/arm.v6.model.json",
+    "toolchainCfgFile": "c:\\Users\\25444\\.vscode\\extensions\\cl.eide-3.23.2\\res\\data\\models/arm.v6.model.json",
     "buildMode": "fast|multhread",
     "showRepathOnLog": true,
     "threadNum": 16,
@@ -158,7 +158,9 @@
             "microcontroller-cpu": "cortex-m4-sp",
             "microcontroller-fpu": "cortex-m4-sp",
             "microcontroller-float": "cortex-m4-sp",
-            "target": "cortex-m4-sp"
+            "$arch-extensions": "",
+            "$clang-arch-extensions": "",
+            "$armlink-arch-extensions": ""
         },
         "c/cpp-compiler": {
             "optimization": "level-0",
@@ -198,7 +200,7 @@
         "SYS_PathSep": ";",
         "SYS_PathSeparator": ";",
         "SYS_EOL": "\r\n",
-        "EIDE_BUILDER_DIR": "c:\\Users\\25444\\.vscode\\extensions\\cl.eide-3.21.5\\res\\tools\\win32\\unify_builder",
+        "EIDE_BUILDER_DIR": "c:\\Users\\25444\\.vscode\\extensions\\cl.eide-3.23.2\\res\\tools\\win32\\unify_builder",
         "EIDE_BINARIES_VER": "12.0.1",
         "EIDE_MSYS": "C:\\Users\\25444\\.eide\\bin\\builder\\msys\\bin",
         "ToolchainRoot": "D:\\Keil_V5\\ARM\\ARMCLANG"

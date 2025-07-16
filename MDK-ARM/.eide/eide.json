@@ -1,9 +1,9 @@
 {
-  "name": "SG_CHASSIS_C_2024_11_5",
+  "name": "SG_GIMBAL_C_2025_2_7",
   "type": "ARM",
   "dependenceList": [],
   "srcDirs": [
-    "User"
+    "../User"
   ],
   "virtualFolder": {
     "name": "<virtual_root>",
@@ -202,141 +202,6 @@
         ]
       },
       {
-        "name": "HAL",
-        "files": [
-          {
-            "path": "User/HAL/HAL.cpp"
-          },
-          {
-            "path": "User/HAL/My_HAL.cpp"
-          }
-        ],
-        "folders": []
-      },
-      {
-        "name": "BSP",
-        "files": [
-          {
-            "path": "User/BSP/Init.cpp"
-          },
-          {
-            "path": "User/BSP/Bsp_Can.cpp"
-          },
-          {
-            "path": "User/BSP/BSP_Motor.cpp"
-          },
-          {
-            "path": "User/BSP/Dbus.cpp"
-          },
-          {
-            "path": "User/BSP/Power/PM01.hpp"
-          },
-          {
-            "path": "User/BSP/SuperCap/SuperCap.hpp"
-          }
-        ],
-        "folders": []
-      },
-      {
-        "name": "App",
-        "files": [
-          {
-            "path": "User/APP/Dji_Motor.cpp"
-          },
-          {
-            "path": "User/APP/Dm_Motor.cpp"
-          },
-          {
-            "path": "User/APP/PowerMeter.cpp"
-          },
-          {
-            "path": "User/APP/Variable.cpp"
-          },
-          {
-            "path": "User/APP/State.cpp"
-          },
-          {
-            "path": "User/APP/Tools.cpp"
-          },
-          {
-            "path": "User/APP/Buzzer.cpp"
-          },
-          {
-            "path": "User/APP/LED.cpp"
-          },
-          {
-            "path": "User/APP/Referee/RM_RefereeSystem.cpp"
-          },
-          {
-            "path": "User/APP/Referee/RM_RefereeSystemCRC.cpp"
-          },
-          {
-            "path": "User/APP/UI/Static/darw_static.cpp"
-          },
-          {
-            "path": "User/APP/UI/Dynamic/darw_dynamic.cpp"
-          }
-        ],
-        "folders": []
-      },
-      {
-        "name": "Algorithm",
-        "files": [
-          {
-            "path": "User/Algorithm/PID.cpp"
-          },
-          {
-            "path": "User/Algorithm/Wheel.cpp"
-          },
-          {
-            "path": "User/Algorithm/Matrix.hpp"
-          },
-          {
-            "path": "User/Algorithm/RLS.hpp"
-          },
-          {
-            "path": "User/Algorithm/Ude.hpp"
-          },
-          {
-            "path": "User/Algorithm/alg_slope.cpp"
-          },
-          {
-            "path": "User/Algorithm/alg_slope.h"
-          },
-          {
-            "path": "User/Algorithm/drv_math.cpp"
-          },
-          {
-            "path": "User/Algorithm/drv_math.h"
-          }
-        ],
-        "folders": []
-      },
-      {
-        "name": "Task",
-        "files": [
-          {
-            "path": "User/Task/CallBack.cpp"
-          },
-          {
-            "path": "User/Task/ChassisTask.cpp"
-          },
-          {
-            "path": "User/Task/CommunicationTask.cpp"
-          },
-          {
-            "path": "User/Task/RefeeTask.cpp"
-          },
-          {
-            "path": "User/Task/PowerTask.cpp"
-          },
-          {
-            "path": "User/Task/EvenTask.cpp"
-          }
-        ],
-        "folders": []
-      },
-      {
         "name": "::CMSIS",
         "files": [],
         "folders": []
@@ -345,19 +210,21 @@
   },
   "outDir": "build",
   "deviceName": null,
-  "packDir": ".pack/Keil/STM32F4xx_DFP.2.14.0",
+  "packDir": null,
   "miscInfo": {
-    "uid": "b0de7d57a81bcfae400cb95251a9b65d"
+    "uid": "5149d095afaede36968bdbc414429996"
   },
   "targets": {
-    "SG_CHASSIS_C_2024_11_5": {
-      "excludeList": [],
+    "SG_GIMBAL_C_2025_2_7": {
+      "excludeList": [
+        "../User/BSP/BSP"
+      ],
       "toolchain": "AC6",
       "compileConfig": {
         "cpuType": "Cortex-M4",
         "floatingPointHardware": "single",
-        "scatterFilePath": "",
         "useCustomScatterFile": false,
+        "scatterFilePath": "<YOUR_SCATTER_FILE>.sct",
         "storageLayout": {
           "RAM": [
             {
@@ -446,7 +313,7 @@
               "tag": "IROM",
               "id": 1,
               "mem": {
-                "startAddr": "0x8000000",
+                "startAddr": "0x0800000",
                 "size": "0x100000"
               },
               "isChecked": true,
@@ -464,7 +331,8 @@
             }
           ]
         },
-        "options": "null"
+        "options": "null",
+        "archExtensions": ""
       },
       "uploader": "OpenOCD",
       "uploadConfig": {
@@ -489,7 +357,6 @@
       "custom_dep": {
         "name": "default",
         "incList": [
-          ".",
           "../Core/Inc",
           "../Drivers/STM32F4xx_HAL_Driver/Inc",
           "../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy",
@@ -498,25 +365,47 @@
           "../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F",
           "../Drivers/CMSIS/Device/ST/STM32F4xx/Include",
           "../Drivers/CMSIS/Include",
-          "../../AppData/Local/Arm/Packs/ARM/CMSIS-DSP/1.15.0/Include",
           "../Middlewares/ST/ARM/DSP/Inc",
-          "User/APP",
-          "User/BSP",
-          "User/Algorithm",
-          "User/HAL",
-          "User/Task",
-          "RTE/_SG_CHASSIS_C_2024_11_5"
+          ".cmsis/include",
+          "RTE/_SG_GIMBAL_C_2025_2_7",
+          "../USB_DEVICE",
+          "../USB_DEVICE/App",
+          "../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
+          "../Middlewares/ST/STM32_USB_Device_Library",
+          "../Middlewares/ST/STM32_USB_Device_Library/Core/Inc",
+          "../USB_DEVICE/Target"
         ],
         "libList": [],
         "defineList": [
           "USE_HAL_DRIVER",
-          "STM32F407xx",
-          "ARM_MATH_CM4",
-          "__FPU_PRESENT",
           "STM32F407xx"
         ]
       },
       "builderOptions": {
+        "AC5": {
+          "version": 4,
+          "beforeBuildTasks": [],
+          "afterBuildTasks": [],
+          "global": {
+            "use-microLIB": false,
+            "output-debug-info": "enable"
+          },
+          "c/cpp-compiler": {
+            "optimization": "level-3",
+            "one-elf-section-per-function": true,
+            "c99-mode": true,
+            "C_FLAGS": "--diag_suppress=1 --diag_suppress=1295",
+            "CXX_FLAGS": "--diag_suppress=1 --diag_suppress=1295",
+            "warnings": "all-warnings"
+          },
+          "asm-compiler": {},
+          "linker": {
+            "output-format": "elf",
+            "xo-base": "",
+            "ro-base": "",
+            "rw-base": ""
+          }
+        },
         "AC6": {
           "version": 3,
           "beforeBuildTasks": [],
@@ -528,8 +417,6 @@
             "optimization": "level-0",
             "language-c": "c99",
             "language-cpp": "c++17",
-            "one-elf-section-per-function": true,
-            "short-enums#wchar": true,
             "warnings": "ac5-like-warnings"
           },
           "asm-compiler": {
@@ -543,5 +430,5 @@
       }
     }
   },
-  "version": "3.5"
+  "version": "3.6"
 }

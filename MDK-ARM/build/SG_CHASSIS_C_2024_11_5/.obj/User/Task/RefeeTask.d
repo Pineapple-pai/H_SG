@@ -1,7 +1,7 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/Task/RefeeTask.o: \
   User\Task\RefeeTask.cpp User\Task\RefeeTask.hpp \
   User\Task\..\APP\UI\UI_Queue.hpp User\APP\..\BSP\StaticTime.hpp \
-  User\APP\..\BSP\Key.hpp User\APP\..\BSP\stdxxx.hpp \
+  User\BSP\Key.hpp User\BSP\stdxxx.hpp \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
@@ -29,7 +29,7 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
   User\Task\..\APP\UI\..\Referee\RM_RefereeSystem.h \
   User\Task\..\APP\UI\..\Referee\..\Referee\RM_RefereeSystemCRC.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\main.h \
+  User\APP\..\BSP\stdxxx.hpp ..\Core\Inc\usart.h ..\Core\Inc\main.h \
   User\Task\..\APP\UI\Static\darw_static.hpp \
   User\Task\..\APP\UI\Dynamic\darw_dynamic.hpp \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h

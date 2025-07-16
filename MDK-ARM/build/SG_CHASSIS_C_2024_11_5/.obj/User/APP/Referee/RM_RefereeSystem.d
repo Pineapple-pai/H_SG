@@ -29,4 +29,4 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
   User\APP\..\APP\Referee\RM_RefereeSystemCRC.h \
-  User\APP\..\BSP\StaticTime.hpp User\APP\..\BSP\Key.hpp
+  User\APP\..\BSP\StaticTime.hpp User\BSP\Key.hpp User\BSP\stdxxx.hpp

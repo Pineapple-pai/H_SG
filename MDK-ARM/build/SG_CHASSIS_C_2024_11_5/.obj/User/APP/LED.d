@@ -1,6 +1,6 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/APP/LED.o: User\APP\LED.cpp \
-  User\APP\..\APP\LED.hpp User\APP\..\APP\..\Task\EvenTask.hpp \
-  User\APP\..\APP\..\BSP\stdxxx.hpp \
+  User\APP\..\APP\LED.hpp User\APP\..\Task\EvenTask.hpp \
+  User\APP\..\BSP\stdxxx.hpp \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
   ..\Core\Inc\tim.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \

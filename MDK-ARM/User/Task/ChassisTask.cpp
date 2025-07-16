@@ -105,6 +105,7 @@ class Chassis_Task::FollowHandler : public StateHandler
         slope_vx.TIM_Calculate_PeriodElapsedCallback();
         slope_vy.TIM_Calculate_PeriodElapsedCallback(); 
         slope_vw.TIM_Calculate_PeriodElapsedCallback();
+        //m_task.applyRearBrake(0.1);
         // 获取斜坡输出
         Chassis_Data.vx = slope_vx.Get_Out();
         Chassis_Data.vy = slope_vy.Get_Out();
@@ -122,7 +123,9 @@ class Chassis_Task::FollowHandler : public StateHandler
         // 可访问m_task的私有成员进行底盘操作
 
         FllowTarget();
+        //m_task.applyRearBrake(0.1);
         m_task.Wheel_UpData();
+
         m_task.Filtering();
         m_task.PID_Updata();
         m_task.CAN_Setting();
@@ -207,9 +210,9 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
     }
 };
 <<<<<<< Updated upstream
-float ROTATION_BIAS = 0.1f;
+float ROTATION_BIAS = 0.00079999998f;
 =======
-
+float ROTATION_BIAS = 0.01f;
 >>>>>>> Stashed changes
 class Chassis_Task::RotatingHandler : public StateHandler
 {
@@ -222,13 +225,8 @@ class Chassis_Task::RotatingHandler : public StateHandler
 
     void RotatingTarget()
     {
-<<<<<<< Updated upstream
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
-=======
-        auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + k * Chassis_Data.vw);
-        auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + k * Chassis_Data.vw);
->>>>>>> Stashed changes
 
         tar_vx.Calc(TAR_LX * 660);
         tar_vy.Calc(TAR_LY * 660);
@@ -281,23 +279,23 @@ class Chassis_Task::StopHandler : public StateHandler
         m_task.Tar_Updata();    
         m_task.Wheel_UpData();                           
         m_task.PID_Updata();
-        m_task.applyRearBrake(0.5);    
-        // // 设置目标为0并增大减量值
-        // slope_vx.Set_Target(0);
-        // slope_vy.Set_Target(0);
-        // slope_vw.Set_Target(0);
+        //m_task.applyRearBrake(0.1);    
+        // 设置目标为0并增大减量值
+        slope_vx.Set_Target(0);
+        slope_vy.Set_Target(0);
+        slope_vw.Set_Target(0);
         
-        // // 获取斜坡输出
-        // Chassis_Data.vx = slope_vx.Get_Out();
-        // Chassis_Data.vy = slope_vy.Get_Out();
-        // Chassis_Data.vw = slope_vw.Get_Out();
+        // 获取斜坡输出
+        Chassis_Data.vx = slope_vx.Get_Out();
+        Chassis_Data.vy = slope_vy.Get_Out();
+        Chassis_Data.vw = slope_vw.Get_Out();
 
-        // // 更新斜坡输出
-        // slope_vx.TIM_Calculate_PeriodElapsedCallback();
-        // slope_vy.TIM_Calculate_PeriodElapsedCallback();
-        // slope_vw.TIM_Calculate_PeriodElapsedCallback();
+        // 更新斜坡输出
+        slope_vx.TIM_Calculate_PeriodElapsedCallback();
+        slope_vy.TIM_Calculate_PeriodElapsedCallback();
+        slope_vw.TIM_Calculate_PeriodElapsedCallback();
         
-        // PID_Updata();
+        //PID_Updata();
 
         pid_vel_String[0].clearPID();
         pid_vel_String[1].clearPID();
@@ -541,7 +539,103 @@ void Chassis_Task::CAN_Setting()
     Motor3508.setMSD(&msd_3508_2006, Chassis_Data.final_3508_Out[2], Get_MOTOR_SET_ID_3508(0x203));
     Motor3508.setMSD(&msd_3508_2006, Chassis_Data.final_3508_Out[3], Get_MOTOR_SET_ID_3508(0x204));
 }
+    int rearIndices[2];
+    int frontIndices[2];
+// void  Chassis_Task::getRearWheels(int rearIndices[4])
+// {
+//     float chassis_dir[2] = {Chassis_Data.vx, Chassis_Data.vy};
+//     float len = sqrtf(chassis_dir[0] * chassis_dir[0] + chassis_dir[1] * chassis_dir[1]);
 
+//     int count = 0;
+
+//     if (len < 1e-6f)
+//     {
+//         // 静止时默认后轮为索引 1 和 2
+//         rearIndices[0] = 1;
+//         rearIndices[1] = 2;
+
+//     }
+
+//     // 归一化底盘方向
+//     chassis_dir[0] /= len;
+//     chassis_dir[1] /= len;
+
+//     float dotProducts[4];  // 每个轮子的方向与底盘方向的点积
+//     for (int i = 0; i < 4; ++i)
+//     {
+//         float angle = Chassis_Data.tar_angle[i];
+//         float speed = Chassis_Data.tar_speed[i];
+
+//         float wheel_dir[2] = {speed * cosf(angle), speed * sinf(angle)};
+//         float dot = wheel_dir[0] * chassis_dir[0] + wheel_dir[1] * chassis_dir[1];
+//         dotProducts[i] = dot;
+//     }
+
+//     // 找出最小的两个点积值（即反向最严重的两个轮子）
+//     int indices[4] = {0, 1, 2, 3};
+
+//     // 冒泡排序找最小两个
+//     for (int i = 0; i < 4; ++i)
+//     {
+//         for (int j = i + 1; j < 4; ++j)
+//         {
+//             if (dotProducts[i] > dotProducts[j])
+//             {
+//                 std::swap(dotProducts[i], dotProducts[j]);
+//                 std::swap(indices[i], indices[j]);
+//             }
+//         }
+//     }
+
+//     // 最小的两个即为后轮
+//     rearIndices[0] = 1;
+//     rearIndices[1] = 2;
+
+// }
+// void Chassis_Task::applyRearBrake(float brakeFactor)
+// {
+
+//     getRearWheels(rearIndices);
+
+//     // 找出前轮索引
+//     int idx = 0;
+//     for (int i = 0; i < 4; ++i)
+//     {
+//         bool isRear = (i == rearIndices[0] || i == rearIndices[1]);
+//         if (!isRear)
+//             frontIndices[idx++] = i;
+//     }
+
+//     // 后轮：直接置零（抱死）
+//     for (int i = 0; i < 2; ++i)
+//     {
+//         int idx = rearIndices[i];
+//         // 设置目标速度为0，并更新真实速度
+//         slope_speed[idx].Set_Target(0.0f);
+//         slope_speed[idx].Set_Now_Real(Chassis_Data.tar_speed[idx]);
+
+//         // 强制输出立即归零
+//         slope_speed[idx].TIM_Calculate_PeriodElapsedCallback();  // 更新斜坡输出
+//         Chassis_Data.tar_speed[idx] = slope_speed[idx].Get_Out();
+//     }
+
+//     // 前轮：按比例衰减，模拟滑行效果
+//     for (int i = 0; i < 2; ++i)
+//     {
+//         int idx = frontIndices[i];
+//         float target = Chassis_Data.tar_speed[idx] * (1.0f - brakeFactor);
+
+//         // 设置斜坡目标
+//         slope_speed[idx].Set_Target(target);
+//         slope_speed[idx].Set_Now_Real(Chassis_Data.tar_speed[idx]);
+//         // 计算新速度并更新 tar_speed
+//         slope_speed[idx].TIM_Calculate_PeriodElapsedCallback();
+//         Chassis_Data.tar_speed[idx] = slope_speed[idx].Get_Out();
+
+//         pid_vel_String[idx].clearPID();
+//         pid_vel_Wheel[idx].clearPID();
+//     }
+// }
 void Chassis_Task::CAN_Send()
 {
     // 发送数据
@@ -558,100 +652,11 @@ void Chassis_Task::CAN_Send()
     Send_ms++;
     Send_ms %= 2;
 
-    // Tools.vofaSend(BSP::Power::pm01.cin_power,
-    //                PowerControl.String_PowerData.EstimatedPower,
-    //                PowerControl.Wheel_PowerData.EstimatedPower,
-    //                0,
-    //                0,
-    //                PowerControl.String_PowerData.pMaxPower[3]);
+    Tools.vofaSend(Chassis_Data.tar_speed[0],  
+    Chassis_Data.tar_speed[1],  
+    Chassis_Data.tar_speed[2],  
+    Chassis_Data.tar_speed[3],  
+    rearIndices[0],             
+    rearIndices[1] );
 }
-void  Chassis_Task::getRearWheels(int rearIndices[4])
-{
-    float chassis_dir[2] = {Chassis_Data.vx, Chassis_Data.vy};
-    float len = sqrtf(chassis_dir[0] * chassis_dir[0] + chassis_dir[1] * chassis_dir[1]);
 
-    int count = 0;
-
-    if (len < 1e-6f)
-    {
-        // 静止时默认后轮为索引 1 和 2
-        rearIndices[0] = 1;
-        rearIndices[1] = 2;
-
-    }
-
-    // 归一化底盘方向
-    chassis_dir[0] /= len;
-    chassis_dir[1] /= len;
-
-    float dotProducts[4];  // 每个轮子的方向与底盘方向的点积
-    for (int i = 0; i < 4; ++i)
-    {
-        float angle = Chassis_Data.tar_angle[i];
-        float speed = Chassis_Data.tar_speed[i];
-
-        float wheel_dir[2] = {speed * cosf(angle), speed * sinf(angle)};
-        float dot = wheel_dir[0] * chassis_dir[0] + wheel_dir[1] * chassis_dir[1];
-        dotProducts[i] = dot;
-    }
-
-    // 找出最小的两个点积值（即反向最严重的两个轮子）
-    int indices[4] = {0, 1, 2, 3};
-
-    // 冒泡排序找最小两个
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = i + 1; j < 4; ++j)
-        {
-            if (dotProducts[i] > dotProducts[j])
-            {
-                std::swap(dotProducts[i], dotProducts[j]);
-                std::swap(indices[i], indices[j]);
-            }
-        }
-    }
-
-    // 最小的两个即为后轮
-    rearIndices[0] = indices[0];
-    rearIndices[1] = indices[1];
-
-}
-void Chassis_Task::applyRearBrake(float brakeFactor)
-{
-    int rearIndices[2];
-    int frontIndices[2];
-    getRearWheels(rearIndices);
-
-    // 找出前轮索引
-    int idx = 0;
-    for (int i = 0; i < 4; ++i)
-    {
-        bool isRear = (i == rearIndices[0] || i == rearIndices[1]);
-        if (!isRear)
-            frontIndices[idx++] = i;
-    }
-
-    // 后轮：直接置零（抱死）
-    for (int i = 0; i < 2; ++i)
-    {
-        int idx = rearIndices[i];
-        Chassis_Data.tar_speed[idx] = 0.0f;
-
-        pid_vel_String[idx].clearPID();
-        pid_vel_Wheel[idx].clearPID();
-    }
-
-    // 前轮：按比例衰减，模拟滑行效果
-    for (int i = 0; i < 2; ++i)
-    {
-        int idx = frontIndices[i];
-        float target = Chassis_Data.tar_speed[idx] * (1.0f - brakeFactor);
-
-        // 设置斜坡目标
-        slope_speed[idx].Set_Target(target);
-        slope_speed[idx].Set_Now_Real(Chassis_Data.tar_speed[idx]);
-
-        pid_vel_String[idx].clearPID();
-        pid_vel_Wheel[idx].clearPID();
-    }
-}

@@ -37,19 +37,15 @@ class Chassis_Task : public Task
     class KeyBoardHandler;
 
     class StopHandler;
-    int getRearWheelIndex();    
+   
     Class_Slope slope_speed[4];
     // 成员变量
     State m_currentState = State::UniversalState;
     std::unique_ptr<StateHandler> m_stateHandler; // 当前状态处理器
-<<<<<<< Updated upstream
     void getRearWheels(int rearIndices[4]);
 
     void applyRearBrake(float brakeFactor);
 
-=======
-    
->>>>>>> Stashed changes
     void Tar_Updata();
 
     void Wheel_UpData();

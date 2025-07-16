@@ -1,7 +1,7 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/BSP/Init.o: User\BSP\Init.cpp \
   User\BSP\Init.hpp User\HAL\My_hal.hpp User\BSP\Bsp_Can.hpp \
-  User\BSP\stdxxx.hpp ..\Core\Inc\can.h ..\Core\Inc\main.h \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  User\HAL\My_HAL.hpp User\BSP\stdxxx.hpp ..\Core\Inc\can.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
@@ -26,5 +26,6 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\gpio.h User\HAL\HAL.hpp \
-  User\APP\State.hpp ..\Core\Inc\tim.h
+  ..\Core\Inc\main.h ..\Core\Inc\usart.h ..\Core\Inc\gpio.h \
+  User\HAL\HAL.hpp User\BSP\BSP_Can.hpp User\APP\State.hpp \
+  ..\Core\Inc\tim.h

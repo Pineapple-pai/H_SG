@@ -1,7 +1,7 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/Task/CommunicationTask.o: \
   User\Task\CommunicationTask.cpp User\Task\CommunicationTask.hpp \
-  User\Task\..\BSP\Dbus.hpp User\Task\..\BSP\..\BSP\StaticTime.hpp \
-  User\Task\..\BSP\..\BSP\Key.hpp User\Task\..\BSP\..\BSP\stdxxx.hpp \
+  User\Task\..\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp \
+  User\BSP\Key.hpp User\BSP\stdxxx.hpp \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \

@@ -26,6 +26,7 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  User\HAL\My_hal.hpp User\BSP\Bsp_Can.hpp ..\Core\Inc\can.h \
-  ..\Core\Inc\main.h ..\Core\Inc\usart.h ..\Core\Inc\gpio.h \
+  User\HAL\My_hal.hpp User\BSP\Bsp_Can.hpp User\HAL\My_HAL.hpp \
+  ..\Core\Inc\can.h ..\Core\Inc\main.h ..\Core\Inc\main.h \
+  ..\Core\Inc\usart.h ..\Core\Inc\gpio.h User\HAL\HAL.hpp \
   User\HAL\HAL.hpp
