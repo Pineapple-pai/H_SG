@@ -81,3 +81,60 @@ Not enough information to list image symbols.
 Finished: 1 information, 0 warning and 5 error messages.
 
 
+[2025-07-16 15:03:58]	[info] incremental build: 39 source files changed
+These source files will be recompiled
+---
+'f:\H_SG\Core\Src\can.c': compiler options has been changed.
+'f:\H_SG\Core\Src\dma.c': compiler options has been changed.
+'f:\H_SG\Core\Src\freertos.c': compiler options has been changed.
+'f:\H_SG\Core\Src\gpio.c': compiler options has been changed.
+'f:\H_SG\Core\Src\main.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_hal_msp.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_hal_timebase_tim.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_it.c': compiler options has been changed.
+'f:\H_SG\Core\Src\system_stm32f4xx.c': compiler options has been changed.
+'f:\H_SG\Core\Src\tim.c': compiler options has been changed.
+'f:\H_SG\Core\Src\usart.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_can.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_exti.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ramfunc.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_uart.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\croutine.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\list.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\queue.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\tasks.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\timers.c': compiler options has been changed.
+'f:\H_SG\MDK-ARM\startup_stm32f407xx.s': source file has been changed.
+
+[2025-07-16 15:03:59]	link failed !, exit code: 1
+   at unify_builder.Program.Main(String[] args_)
+---
+Error: L6218E: Undefined symbol ChassisTask (referred from freertos.o).
+Error: L6218E: Undefined symbol CommunicationTask (referred from freertos.o).
+Error: L6218E: Undefined symbol EventTask (referred from freertos.o).
+Error: L6218E: Undefined symbol RLSTask (referred from freertos.o).
+Error: L6218E: Undefined symbol RefeeTask (referred from freertos.o).
+Error: L6218E: Undefined symbol DirUpdata (referred from main.o).
+Error: L6218E: Undefined symbol Init (referred from main.o).
+Not enough information to list image symbols.
+Finished: 1 information, 0 warning and 7 error messages.
+
+

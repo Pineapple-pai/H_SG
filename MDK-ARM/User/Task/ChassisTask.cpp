@@ -209,11 +209,7 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         m_task.CAN_Send();
     }
 };
-<<<<<<< Updated upstream
 float ROTATION_BIAS = 0.00079999998f;
-=======
-float ROTATION_BIAS = 0.01f;
->>>>>>> Stashed changes
 class Chassis_Task::RotatingHandler : public StateHandler
 {
   public:
