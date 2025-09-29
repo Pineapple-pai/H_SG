@@ -13,7 +13,7 @@ void CommunicationTask(void *argument)
 {
     for (;;)
     {
-        // Gimbal_to_Chassis_Data.Data_receive(&huart1);
+        Gimbal_to_Chassis_Data.Data_receive(&huart1);
         Gimbal_to_Chassis_Data.Transmit();
         osDelay(10);
     }
@@ -30,7 +30,7 @@ void Gimbal_to_Chassis::Init()
 void Gimbal_to_Chassis::Data_receive(UART_HandleTypeDef *huart)
 {
     const uint8_t EXPECTED_HEAD = 0xA5; // 根据发送端设置的头字节
-    const uint8_t EXPECTED_LEN = 1 + sizeof(Direction) + sizeof(ChassisMode) + sizeof(UiList);
+    const uint8_t EXPECTED_LEN = 1 + sizeof(Direction) + sizeof(ChassisMode) + sizeof(UiList) + sizeof(IMU);
 
     // 校验长度和头字节
     if (pData[0] != EXPECTED_HEAD)
@@ -49,7 +49,10 @@ void Gimbal_to_Chassis::Data_receive(UART_HandleTypeDef *huart)
 
     std::memcpy(&ui_list, ptr, sizeof(ui_list));
     ptr += sizeof(ui_list);
-
+		
+		std::memcpy(&imu, ptr, sizeof(imu));
+    ptr += sizeof(imu);
+		
     dirTime.UpLastTime();
 
     HAL_UART_Receive_IT(&huart1, pData, sizeof(pData));

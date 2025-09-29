@@ -128,8 +128,13 @@ class Gimbal_to_Chassis
         uint16_t booster_heat_max;
         uint16_t booster_now_heat;
     };
+		struct __attribute__((packed)) IMU //IMU数据
+		{
+			float yaw;
+			float pitch;
+		};
 
-    uint8_t pData[14];
+    uint8_t pData[22];
 
     uint8_t send_buffer[8];
 
@@ -143,7 +148,8 @@ class Gimbal_to_Chassis
     struct UiList ui_list;
 
     struct Booster booster;
-
+		struct IMU imu;
+	
   public:
     bool getUniversal()
     {
@@ -238,6 +244,14 @@ class Gimbal_to_Chassis
     {
         booster.booster_heat_cd = booster_cd;
     }
+		float getYaw()
+		{
+			return imu.yaw;
+		}
+		float getPitch()
+		{
+			return imu.pitch;
+		}
 };
 
 inline uint8_t getSendRc(uint16_t RcData)

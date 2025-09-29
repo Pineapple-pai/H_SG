@@ -45,24 +45,13 @@ class Chassis_Task::UniversalHandler : public StateHandler
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
 
-        // 设置斜坡目标值
-        slope_vx.Set_Target(TAR_LX * 660);
-        slope_vy.Set_Target(TAR_LY * 660);
+        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
+        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
+        float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
 
-        // 更新真实值（从当前速度获取）
-        slope_vx.Set_Now_Real(Chassis_Data.vx);
-        slope_vy.Set_Now_Real(Chassis_Data.vy);
-
-        // 计算斜坡输出
-        slope_vx.TIM_Calculate_PeriodElapsedCallback();
-        slope_vy.TIM_Calculate_PeriodElapsedCallback();
-
-        // 获取斜坡输出
-        Chassis_Data.vx = slope_vx.Get_Out();
-        Chassis_Data.vy = slope_vy.Get_Out();
-
-        Chassis_Data.vx = (Chassis_Data.vx * cos_theta - Chassis_Data.vy * sin_theta);
-        Chassis_Data.vy = (Chassis_Data.vx * sin_theta + Chassis_Data.vy * cos_theta);
+        Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
+        Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
+        Chassis_Data.vw = vw_slope;
     }
 
     void handle() override
@@ -90,30 +79,15 @@ class Chassis_Task::FollowHandler : public StateHandler
     {
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
-
-        slope_vx.Set_Target(TAR_LX * 660);
-        slope_vy.Set_Target(TAR_LY * 660);
-
-        pid_vw.GetPidPos(Kpid_vw, 0, Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
-        slope_vw.Set_Target(pid_vw.GetCout());
-        // 更新真实值（从当前速度获取）
-        slope_vx.Set_Now_Real(Chassis_Data.vx);
-        slope_vy.Set_Now_Real(Chassis_Data.vy);
-        slope_vw.Set_Now_Real(Chassis_Data.vw);
-
-        // 计算斜坡输出
-        slope_vx.TIM_Calculate_PeriodElapsedCallback();
-        slope_vy.TIM_Calculate_PeriodElapsedCallback(); 
-        slope_vw.TIM_Calculate_PeriodElapsedCallback();
-        //m_task.applyRearBrake(0.1);
-        // 获取斜坡输出
-        Chassis_Data.vx = slope_vx.Get_Out();
-        Chassis_Data.vy = slope_vy.Get_Out();
-        Chassis_Data.vw = slope_vw.Get_Out();
         
-        Chassis_Data.vx = (Chassis_Data.vx * cos_theta - Chassis_Data.vx * sin_theta);
-        Chassis_Data.vy = (Chassis_Data.vy * sin_theta + Chassis_Data.vy * cos_theta);
-        Chassis_Data.vw = (Chassis_Data.vw);
+        pid_vw.GetPidPos(Kpid_vw, 0, Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
+        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
+        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
+        float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
+        
+        Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
+        Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
+        Chassis_Data.vw = (vw_slope);
 
         td_FF_Tar.Calc(TAR_LX * 660);
     }
@@ -147,8 +121,9 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
 
-        tar_vx.Calc(TAR_LX * 660);
-        tar_vy.Calc(TAR_LY * 660);
+        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
+        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
+        float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
 
         angle = Gimbal_to_Chassis_Data.getTargetOffsetAngle();
 
@@ -189,10 +164,9 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
             UI::UI_send_queue.is_Delete_all = true;
             UI::Static::UI_static.Init();
         }
-
-        Chassis_Data.vx = (tar_vx.x1 * cos_theta - tar_vy.x1 * sin_theta);
-        Chassis_Data.vy = (tar_vx.x1 * sin_theta + tar_vy.x1 * cos_theta);
-        Chassis_Data.vw = (tar_vw.x1);
+        Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
+        Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
+        Chassis_Data.vw = vw_slope;
 
         td_FF_Tar.Calc(TAR_LX * 660);
     }
@@ -224,16 +198,16 @@ class Chassis_Task::RotatingHandler : public StateHandler
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
 
-        tar_vx.Calc(TAR_LX * 660);
-        tar_vy.Calc(TAR_LY * 660);
-        tar_vw.Calc(TAR_VW * 660);
+        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
+        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
+        float vw_slope = ApplySlope(slope_vw, TAR_VW * 660, Chassis_Data.vw);
 
         //        pid_vw.GetPidPos(Kpid_vw, 0, Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
         //        tar_vw.Calc(pid_vw.GetCout());
 
-        Chassis_Data.vx = (tar_vx.x1 * cos_theta - tar_vy.x1 * sin_theta);
-        Chassis_Data.vy = (tar_vx.x1 * sin_theta + tar_vy.x1 * cos_theta);
-        Chassis_Data.vw = (tar_vw.x1);
+        Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
+        Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
+        Chassis_Data.vw = vw_slope;
 
         td_FF_Tar.Calc(TAR_LX * 660);
     }
@@ -275,21 +249,6 @@ class Chassis_Task::StopHandler : public StateHandler
         m_task.Tar_Updata();    
         m_task.Wheel_UpData();                           
         m_task.PID_Updata();
-        //m_task.applyRearBrake(0.1);    
-        // 设置目标为0并增大减量值
-        slope_vx.Set_Target(0);
-        slope_vy.Set_Target(0);
-        slope_vw.Set_Target(0);
-        
-        // 获取斜坡输出
-        Chassis_Data.vx = slope_vx.Get_Out();
-        Chassis_Data.vy = slope_vy.Get_Out();
-        Chassis_Data.vw = slope_vw.Get_Out();
-
-        // 更新斜坡输出
-        slope_vx.TIM_Calculate_PeriodElapsedCallback();
-        slope_vy.TIM_Calculate_PeriodElapsedCallback();
-        slope_vw.TIM_Calculate_PeriodElapsedCallback();
         
         //PID_Updata();
 
@@ -648,11 +607,6 @@ void Chassis_Task::CAN_Send()
     Send_ms++;
     Send_ms %= 2;
 
-    Tools.vofaSend(Chassis_Data.tar_speed[0],  
-    Chassis_Data.tar_speed[1],  
-    Chassis_Data.tar_speed[2],  
-    Chassis_Data.tar_speed[3],  
-    rearIndices[0],             
-    rearIndices[1] );
+    Tools.vofaSend(0,0,0,0,0,0);
 }
 
