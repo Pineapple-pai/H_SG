@@ -17,7 +17,8 @@ class Chassis_Task : public Task
         FollowState,    // 跟随模式
         RotatingState,  // 旋转模式
         KeyBoardState,  // 键盘控制模式
-        StopState // 急停状态
+        StopState,      // 急停状态
+        MoveState       // 移动状态
     };
 
     explicit Chassis_Task();
@@ -31,14 +32,14 @@ class Chassis_Task : public Task
     void updateState() override;
 
   private:
-    // 状态处理器实现类声明
+
     class UniversalHandler;
     class FollowHandler;
     class RotatingHandler;
     class KeyBoardHandler;
 
     class StopHandler;
-   
+    class MoveHandler;
     Class_Slope slope_speed[4];
     // 成员变量
     State m_currentState = State::UniversalState;
@@ -70,6 +71,7 @@ class Chassis_Task : public Task
         CAN_Setting();
         CAN_Send();
     }
+    void MoveTarget();
 
 };
     inline float ApplySlope(Class_Slope& slope, float target, float now_real) {

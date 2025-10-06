@@ -153,6 +153,16 @@ inline bool Stop()
     return ((dr16.switchLeft() == Dr16::Switch::DOWN) && (dr16.switchRight() == Dr16::Switch::DOWN) ||
             Gimbal_to_Chassis_Data.getStop() || Dir_Event.getDir_Communication());
 }
+/**
+ * @brief 按键：左上右中
+ * 指定距离移动
+ * @return true
+ * @return false
+ */
+inline bool Move()
+{
+    return ((dr16.switchLeft() == Dr16::Switch::UP) && (dr16.switchRight() == Dr16::Switch::MIDDLE));
+}
 } // namespace Chassis
 
 } // namespace Mode

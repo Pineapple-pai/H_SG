@@ -1,3 +1,4 @@
+
 #include "ChassisTask.hpp"
 #include "../APP/Referee/RM_RefereeSystem.h"
 #include "../Task/CommunicationTask.hpp"
@@ -5,15 +6,18 @@
 #include "State.hpp"
 #include "Variable.hpp"
 #include "cmsis_os2.h"
-
+#include "../Task/PowerTask.hpp"
 #include "../APP/Remote/KeyBroad.hpp"
 #include "../APP/Remote/Mode.hpp"
 #include "../APP/UI/Static/darw_static.hpp"
 #include "../APP/UI/UI_Queue.hpp"
 #include "../BSP/Dbus.hpp"
 #include "../BSP/Power/PM01.hpp"
-TaskManager taskManager;
 
+TaskManager taskManager;
+float torque_ff[4] = {0.0f};
+float pitch_deg = 0.0f;
+float pitch_rad = 0.0f;
 
 void ChassisTask(void *argument)
 {
@@ -77,6 +81,7 @@ class Chassis_Task::FollowHandler : public StateHandler
 
     void FllowTarget()
     {
+
         auto cos_theta = HAL::cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         auto sin_theta = HAL::sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         
@@ -90,20 +95,21 @@ class Chassis_Task::FollowHandler : public StateHandler
         Chassis_Data.vw = (vw_slope);
 
         td_FF_Tar.Calc(TAR_LX * 660);
+			
     }
 
     void handle() override
     {
         // 可访问m_task的私有成员进行底盘操作
-
-        FllowTarget();
-        //m_task.applyRearBrake(0.1);
-        m_task.Wheel_UpData();
-
-        m_task.Filtering();
-        m_task.PID_Updata();
-        m_task.CAN_Setting();
-        m_task.CAN_Send();
+ 
+            FllowTarget();
+            //m_task.applyRearBrake(0.1);
+            m_task.Wheel_UpData();
+            m_task.Filtering();
+            m_task.PID_Updata();
+            m_task.CAN_Setting();
+            m_task.CAN_Send();
+        
     }
 };
 float angle;
@@ -221,16 +227,6 @@ class Chassis_Task::RotatingHandler : public StateHandler
         m_task.CAN_Setting();
         m_task.CAN_Send();
     }
-
-    void RotingTarget()
-    {
-        tar_vx.Calc(TAR_LX * 660);
-        tar_vy.Calc(TAR_LY * 660);
-        td_FF_Tar.Calc(TAR_LX * 660);
-
-        if (CONTROL_SIG == 0)
-            tar_vw.Calc(660);
-    }
 };
 
 class Chassis_Task::StopHandler : public StateHandler
@@ -267,6 +263,64 @@ class Chassis_Task::StopHandler : public StateHandler
     }
 };
 
+// === MoveHandler: 3m直线运动 ===
+class Chassis_Task::MoveHandler : public StateHandler
+{
+    Chassis_Task &m_task;
+    bool started = false;
+    int encoder_start[4] = {0};
+    int encoder_target_delta = 0;
+    float speed = 300.0f;
+public:
+    explicit MoveHandler(Chassis_Task &task) : m_task(task) {}
+
+    void MoveTarget()
+    {
+        constexpr float target_distance = 3.0f; // m
+        constexpr float wheel_radius = 0.055f;  // m
+        constexpr float wheel_circum = 2 * 3.1415926f * wheel_radius;
+        constexpr float turns = target_distance / wheel_circum;
+
+        encoder_target_delta = (int)(turns * 8191 + 0.5f); // ≈71100
+        // 初始化编码器起始位置
+        if (!started) {
+            for (int i = 0; i < 4; ++i) {
+                encoder_start[i] = (int)Motor3508.motorData[i].Data[Dji_Angle];
+            }
+            started = true;
+        }
+        // 检查是否所有轮子都达到目标位置
+        bool finished = true;
+        for (int i = 0; i < 4; ++i) {
+            int delta = abs((int)Motor3508.motorData[i].Data[Dji_Angle] - encoder_start[i]);
+            if (delta < encoder_target_delta) {
+                finished = false;
+            }
+        }
+        if (finished) {
+            // 停止所有轮子
+            Chassis_Data.vx = 0;
+            Chassis_Data.vy = 0;
+            Chassis_Data.vw = 0;
+        } else {
+            // 设定前进速度
+            Chassis_Data.vx = speed;
+            Chassis_Data.vy = 0;
+            Chassis_Data.vw = 0;
+        }
+    }
+
+    void handle() override
+    {
+        MoveTarget();
+        m_task.Wheel_UpData();
+        m_task.Filtering();
+        m_task.PID_Updata();
+        m_task.CAN_Setting();
+        m_task.CAN_Send();
+    }
+};
+
 //=== 任务方法实现 ===//
 Chassis_Task::Chassis_Task()
 : slope_speed{
@@ -295,24 +349,17 @@ void Chassis_Task::updateState()
     auto switch_right = dr16.switchRight();
     auto switch_left = dr16.switchLeft();
 
-    if (Mode::Chassis::Universal())
-    {
+    if(Mode::Chassis::Move()){
+        m_currentState = State::MoveState;
+    } else if (Mode::Chassis::Universal()) {
         m_currentState = State::UniversalState;
-    }
-    if (Mode::Chassis::Follow())
-    {
+    } else if (Mode::Chassis::Follow()) {
         m_currentState = State::FollowState;
-    }
-    if (Mode::Chassis::Rotating())
-    {
+    } else if (Mode::Chassis::Rotating()) {
         m_currentState = State::RotatingState;
-    }
-    if (Mode::Chassis::KeyBoard())
-    {
+    } else if (Mode::Chassis::KeyBoard()) {
         m_currentState = State::KeyBoardState;
-    }
-    if (Mode::Chassis::Stop())
-    {
+    } else if (Mode::Chassis::Stop()) {
         m_currentState = State::StopState;
     }
 
@@ -333,6 +380,9 @@ void Chassis_Task::updateState()
         break;
     case State::StopState:
         m_stateHandler = std::make_unique<StopHandler>(*this);
+        break;
+    case State::MoveState:
+        m_stateHandler = std::make_unique<MoveHandler>(*this);
         break;
     }
 }
@@ -434,12 +484,13 @@ void Chassis_Task::PID_Updata()
     for (int i = 0; i < 4; i++)
     {
         // 舵向电机前馈更新
+        
         feed_6020[i].UpData(Chassis_Data.Zero_cross[i]);
         Chassis_Data.FF_Zero_cross[i] = Tools.Round_Error(feed_6020[i].cout, feed_6020[i].target_e, 8191);
-
         // 舵向电机角度环更新
         pid_angle_String[i].GetPidPos(Kpid_6020_angle, Chassis_Data.Zero_cross[i], Motor6020.GetAngleFeedback(i),
                                       16384.0f);
+        
         // 舵向电机速度环更新
         pid_vel_String[i].GetPidPos(Kpid_6020_vel, pid_angle_String[i].pid.cout, Motor6020.GetRPMFeedback(i), 16384);
     }
@@ -460,9 +511,20 @@ void Chassis_Task::CAN_Setting()
     }
 
     // 如果，没有超功率就沿用pid输出，如果超功率就进入功率控制部分的判断
+    // 上坡扭矩补偿前馈参数
+    constexpr float mass = 18.0f; // kg
+    constexpr float g = 9.81f;
+    pitch_deg = Gimbal_to_Chassis_Data.getPitch(); // 单位：度
+    pitch_rad = pitch_deg * 3.1415926535f / 180.0f;
+    float F_slope = mass * g * sinf(pitch_rad); // N
+    constexpr float wheel_radius = 0.055f; // 轮毂半径，单位m
+    float torque_ff_value = (F_slope * wheel_radius) / 4.0f; // 每轮补偿扭矩
+
     for (int i = 0; i < 4; i++)
     {
-        Chassis_Data.final_3508_Out[i] = pid_vel_Wheel[i].GetCout();
+        // 将补偿加到3508的PID输出
+        torque_ff[i] = torque_ff_value * 273;
+        Chassis_Data.final_3508_Out[i] = pid_vel_Wheel[i].GetCout() + torque_ff[i];
     }
 
 //    // 功率控制部分
@@ -496,101 +558,7 @@ void Chassis_Task::CAN_Setting()
 }
     int rearIndices[2];
     int frontIndices[2];
-// void  Chassis_Task::getRearWheels(int rearIndices[4])
-// {
-//     float chassis_dir[2] = {Chassis_Data.vx, Chassis_Data.vy};
-//     float len = sqrtf(chassis_dir[0] * chassis_dir[0] + chassis_dir[1] * chassis_dir[1]);
 
-//     int count = 0;
-
-//     if (len < 1e-6f)
-//     {
-//         // 静止时默认后轮为索引 1 和 2
-//         rearIndices[0] = 1;
-//         rearIndices[1] = 2;
-
-//     }
-
-//     // 归一化底盘方向
-//     chassis_dir[0] /= len;
-//     chassis_dir[1] /= len;
-
-//     float dotProducts[4];  // 每个轮子的方向与底盘方向的点积
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         float angle = Chassis_Data.tar_angle[i];
-//         float speed = Chassis_Data.tar_speed[i];
-
-//         float wheel_dir[2] = {speed * cosf(angle), speed * sinf(angle)};
-//         float dot = wheel_dir[0] * chassis_dir[0] + wheel_dir[1] * chassis_dir[1];
-//         dotProducts[i] = dot;
-//     }
-
-//     // 找出最小的两个点积值（即反向最严重的两个轮子）
-//     int indices[4] = {0, 1, 2, 3};
-
-//     // 冒泡排序找最小两个
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         for (int j = i + 1; j < 4; ++j)
-//         {
-//             if (dotProducts[i] > dotProducts[j])
-//             {
-//                 std::swap(dotProducts[i], dotProducts[j]);
-//                 std::swap(indices[i], indices[j]);
-//             }
-//         }
-//     }
-
-//     // 最小的两个即为后轮
-//     rearIndices[0] = 1;
-//     rearIndices[1] = 2;
-
-// }
-// void Chassis_Task::applyRearBrake(float brakeFactor)
-// {
-
-//     getRearWheels(rearIndices);
-
-//     // 找出前轮索引
-//     int idx = 0;
-//     for (int i = 0; i < 4; ++i)
-//     {
-//         bool isRear = (i == rearIndices[0] || i == rearIndices[1]);
-//         if (!isRear)
-//             frontIndices[idx++] = i;
-//     }
-
-//     // 后轮：直接置零（抱死）
-//     for (int i = 0; i < 2; ++i)
-//     {
-//         int idx = rearIndices[i];
-//         // 设置目标速度为0，并更新真实速度
-//         slope_speed[idx].Set_Target(0.0f);
-//         slope_speed[idx].Set_Now_Real(Chassis_Data.tar_speed[idx]);
-
-//         // 强制输出立即归零
-//         slope_speed[idx].TIM_Calculate_PeriodElapsedCallback();  // 更新斜坡输出
-//         Chassis_Data.tar_speed[idx] = slope_speed[idx].Get_Out();
-//     }
-
-//     // 前轮：按比例衰减，模拟滑行效果
-//     for (int i = 0; i < 2; ++i)
-//     {
-//         int idx = frontIndices[i];
-//         float target = Chassis_Data.tar_speed[idx] * (1.0f - brakeFactor);
-
-//         // 设置斜坡目标
-//         slope_speed[idx].Set_Target(target);
-//         slope_speed[idx].Set_Now_Real(Chassis_Data.tar_speed[idx]);
-//         // 计算新速度并更新 tar_speed
-//         slope_speed[idx].TIM_Calculate_PeriodElapsedCallback();
-//         Chassis_Data.tar_speed[idx] = slope_speed[idx].Get_Out();
-
-//         pid_vel_String[idx].clearPID();
-//         pid_vel_Wheel[idx].clearPID();
-//     }
-// }
 void Chassis_Task::CAN_Send()
 {
     // 发送数据
@@ -607,6 +575,8 @@ void Chassis_Task::CAN_Send()
     Send_ms++;
     Send_ms %= 2;
 
-    Tools.vofaSend(0,0,0,0,0,0);
+    Tools.vofaSend(PowerControl.GetEstWheelPow(), PowerControl.GetEstStringPow(), Motor6020.GetAngleFeedback(0), 0, 0, 0);
 }
+
+
 

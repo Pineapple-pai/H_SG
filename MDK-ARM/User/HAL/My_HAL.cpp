@@ -29,7 +29,7 @@ void My_hal::_dr16_init()
 {
 	BSP::Remote::dr16.Init();
 	Gimbal_to_Chassis_Data.Init();
-   BSP::Power::pm01.PM01Init();
+    BSP::Power::pm01.PM01Init();
     RM_RefereeSystem::RM_RefereeSystemInit(); // 串口初始化
 }
 

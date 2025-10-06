@@ -47,7 +47,7 @@
 #define R_Back_3508_ID      0x203
 #define R_Forward_3508_ID   0x204
 
-#define Chassis_angle_Init_0x205 	6490 + 4096
+#define Chassis_angle_Init_0x205 	6500 + 4096
 #define Chassis_angle_Init_0x206 	404
 #define Chassis_angle_Init_0x207 	6438 + 4096
 #define Chassis_angle_Init_0x208 	5920

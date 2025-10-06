@@ -52,6 +52,17 @@
 #define TAR_RX BSP::Remote::dr16.remoteRight().x
 #define TAR_RY BSP::Remote::dr16.remoteRight().y
 
+// CAN通信相关定义
+#define CAN_Chassis_to_Gimbal_BASE_ID 0x300    // 基础ID
+#define CAN_Chassis_to_Gimbal_FRAME1_ID 0x301  // 第一帧ID
+#define CAN_Chassis_to_Gimbal_FRAME2_ID 0x302  // 第二帧ID
+#define CAN_Chassis_to_Gimbal_FRAME3_ID 0x303  // 第三帧ID
+// 添加云台发送的ID（用于底盘接收）
+#define CAN_GIMBAL_TO_CHASSIS_BASE_ID 0x400
+#define CAN_GIMBAL_TO_CHASSIS_FRAME1_ID 0x401
+#define CAN_GIMBAL_TO_CHASSIS_FRAME2_ID 0x402
+#define CAN_GIMBAL_TO_CHASSIS_FRAME3_ID 0x403
+
 #endif
 
 class Communicat_Data
@@ -79,13 +90,15 @@ class Gimbal_to_Chassis
 {
   public:
     void Data_send();
-    void Data_receive(UART_HandleTypeDef *huart);
+    //void Data_receive(UART_HandleTypeDef *huart);
+    void Data_receive();
     void Init();
     bool ISDir();
-
     void Transmit();
 
   private:
+    void ParseCANFrame(uint32_t std_id, uint8_t* data);
+    void ProcessReceivedData();
     void SlidingWindowRecovery();
 
     struct __attribute__((packed)) Direction // 方向结构体
@@ -133,6 +146,16 @@ class Gimbal_to_Chassis
 			float yaw;
 			float pitch;
 		};
+            // CAN接收缓冲区
+    uint8_t can_rx_buffer[23]; // 24字节缓冲区用于重组数据
+    bool frame1_received = false;
+    bool frame2_received = false; 
+    bool frame3_received = false;
+    // 添加时间戳用于超时检测
+    uint32_t last_frame_time = 0;
+    static constexpr uint32_t FRAME_TIMEOUT = 50; // 50ms超时
+    // CAN发送缓冲区
+    uint8_t can_tx_buffer[3][8]; // 3帧，每帧8字节
 
     uint8_t pData[22];
 
@@ -252,6 +275,8 @@ class Gimbal_to_Chassis
 		{
 			return imu.pitch;
 		}
+            // 新增CAN数据处理方法
+    void HandleCANMessage(uint32_t std_id, uint8_t* data);
 };
 
 inline uint8_t getSendRc(uint16_t RcData)
