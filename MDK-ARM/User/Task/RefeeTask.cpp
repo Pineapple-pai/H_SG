@@ -12,6 +12,6 @@ void RefeeTask(void *argument)
        UI::Dynamic::UI_dynamic.darw_UI();
        UI::UI_send_queue.send();
 
-        osDelay(1);
+        osDelay(5);
     }
 }

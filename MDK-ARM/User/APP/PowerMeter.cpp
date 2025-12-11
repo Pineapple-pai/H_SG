@@ -1,4 +1,5 @@
 #include "PowerMeter.hpp"
+#include "../BSP/state_watch.hpp"
 using namespace PowerMeter;
 Meter::Meter(int16_t address, uint8_t MotorSize, Meter_Data *MeterAddress, uint8_t *idxs)
 {
@@ -25,7 +26,8 @@ void Meter::Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t RxHeaderData[])
     if (idx == -1)
         return; // 如果超越数组大小，或者不存在id
 
-    this->meterData[idx].DirFlag = this->meterData[idx].dirTime.ISDir(10);
+    // 修复: 使用正确的函数名UpdateLastTime替代updateTimestamp
+    this->meterData[idx].state_watch_.UpdateLastTime();
 
     // 电压
     this->meterData[idx].Data[Voltage] = (float)((int32_t)(RxHeaderData[1] << 8) | (int32_t)(RxHeaderData[0])) / 100.0f;
@@ -36,20 +38,22 @@ void Meter::Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t RxHeaderData[])
     // 功率 = 电压 * 电流
     this->meterData[idx].Data[Power] = this->meterData[idx].Data[Voltage] * this->meterData[idx].Data[Current];
 
-    //能量=功率对时间的积分
+    // 能量 = 功率对时间的积分
     this->meterData[idx].Data[Energy] += this->meterData[idx].Data[Power];
-
-    // 更新时间
-    this->meterData[idx].dirTime.UpLastTime();
+    
+    this->meterData[idx].state_watch_.UpdateLastTime();
+    this->meterData[idx].state_watch_.UpdateTime();
+    this->meterData[idx].state_watch_.CheckStatus();
 }
 
-uint8_t Meter::ISDir()
+// 修复: 使用正确的返回类型bool并修正函数名
+bool Meter::isPmOnline()
 {
-    bool is_dir = 0;
-    for (int i = 0; i < this->MotorSize; i++)
-    {
-        is_dir |= this->meterData[GET_Motor_ID_ADDRESS_BIND_(this->meterData[i].address)].DirFlag =
-            this->meterData[GET_Motor_ID_ADDRESS_BIND_(this->meterData[i].address)].dirTime.ISDir(10);
+    for (uint8_t i = 0; i < this->MotorSize; i++) {
+        // 修复: 使用正确的函数名GetStatus替代getStatus
+        if (this->meterData[i].state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE) {
+            return true;
+        }
     }
-    return is_dir;
+    return false;
 }

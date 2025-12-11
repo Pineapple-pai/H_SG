@@ -171,7 +171,15 @@ targets:
         - .cmsis/include
         - ../MDK-ARM/RTE/_SG_CHASSIS_C_2024_11_5
       libList: []
-    excludeList: []
+    excludeList:
+      - ../MDK-ARM/User/APP/Dji_Motor.cpp
+      - ../MDK-ARM/User/APP/Dm_Motor.cpp
+      - ../MDK-ARM/User/HAL/HAL.cpp
+      - ../MDK-ARM/User/HAL/My_HAL.cpp
+      - ../MDK-ARM/User/BSP/BSP_Motor.cpp
+      - ../MDK-ARM/User/BSP/SuperCap/SuperCap.cpp
+      - ../MDK-ARM/User/BSP/Power/PM01.cpp
+      - ../MDK-ARM/User/APP/RM_UI/ui_ROT_user.c
     toolchain: AC6
     toolchainConfigMap:
       AC6:
@@ -190,7 +198,7 @@ targets:
             one-elf-section-per-function: true
             optimization: level-1
             short-enums#wchar: true
-            warnings: ac5-like-warnings
+            warnings: no-warnings
           global:
             output-debug-info: enable
           linker:

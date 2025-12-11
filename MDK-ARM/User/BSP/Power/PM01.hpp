@@ -7,6 +7,7 @@
 #include "../BSP/stdxxx.hpp"
 #include "can.h"
 #include "../Task/CommunicationTask.hpp"
+#include "../BSP/state_watch.hpp"
 #define WARNING_POWER_BUFFER 30
 
 namespace BSP::Power
@@ -37,12 +38,16 @@ namespace BSP::Power
         float temperature;          // 温度
         float add_run_time;         // 累加运行时间,单位小时
         float now_run_time;         // 本次运行时间,单位分钟
-        RM_StaticTime time;
+        //RM_StaticTime time;
         bool is_open;     // 打开
 		bool is_dir;
         uint8_t send_cnt; // 发送次数用于调节发送，定时发送输入功率
         CAN_TxHeaderTypeDef TxHeader;
         uint8_t SendData[8];
+        
+        // 添加状态监视器
+        BSP::WATCH_STATE::StateWatch state_watch_{100}; // 100ms超时
+        
         RM_PM01()
         {
             this->PM01Init();
@@ -57,7 +62,7 @@ namespace BSP::Power
         void PM01SendFun();
         // 初始化
         void PM01Init();
-		bool ISDir();
+		bool isPmOnline();
     };
 
     static float pm01_chao;
@@ -69,7 +74,7 @@ namespace BSP::Power
     static uint8_t wwww = 0;
     inline void RM_PM01::PM01SendFun()
     {
-        if (time.ISOne(2)) return;
+        //if (time.ISOne(2)) return;
         static char sendflag = 0;
         switch (sendflag++) {
             case 0:
@@ -153,29 +158,51 @@ namespace BSP::Power
                 this->cin_power   = (float)(RxHeaderData[0] << 8 | RxHeaderData[1]) * 0.01f;
                 this->cin_voltage = (float)(RxHeaderData[2] << 8 | RxHeaderData[3]) * 0.01f;
                 this->cin_ampere  = (float)(RxHeaderData[4] << 8 | RxHeaderData[5]) * 0.01f;
+
+                state_watch_.UpdateLastTime();              
+                state_watch_.UpdateTime();
+                state_watch_.CheckStatus();
                 break;
             case 0x612:
                 this->cout_power   = (float)(RxHeaderData[0] << 8 | RxHeaderData[1]) * 0.01f;
                 this->cout_voltage = (float)(RxHeaderData[2] << 8 | RxHeaderData[3]) * 0.01f;
                 this->cout_ampere  = (float)(RxHeaderData[4] << 8 | RxHeaderData[5]) * 0.01f;
+
+                state_watch_.UpdateLastTime();
+                state_watch_.UpdateTime();
+                state_watch_.CheckStatus();
                 break;
             case 0x613:
                 this->temperature  = (RxHeaderData[0] << 8 | RxHeaderData[1]) * 0.1f;
                 this->add_run_time = (RxHeaderData[2] << 8 | RxHeaderData[3]);
                 this->now_run_time = (RxHeaderData[4] << 8 | RxHeaderData[5]);
+
+                state_watch_.UpdateLastTime();
+                state_watch_.UpdateTime();
+                state_watch_.CheckStatus();
                 break;
             default:
                 break;
         }
-        time.UpLastTime();
+        //time.UpLastTime();
     }
 	
-	inline bool RM_PM01::ISDir()
+	inline bool RM_PM01::isPmOnline()
 	{
-		is_dir = time.ISDir(10);
-
-		return is_dir;
+		// 修复: 使用正确的函数名GetStatus替代getStatus
+        return (state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
 	}
     inline RM_PM01 pm01;
+    static void PM01ParseDate(const HAL::CAN::Frame& frame)
+    {
+        CAN_RxHeaderTypeDef rx_header;
+        rx_header.StdId = frame.id;
+        rx_header.ExtId = frame.id;
+        rx_header.IDE = frame.is_extended_id ? CAN_ID_EXT : CAN_ID_STD;
+        rx_header.RTR = frame.is_remote_frame ? CAN_RTR_REMOTE : CAN_RTR_DATA;
+        rx_header.DLC = frame.dlc;
+        
+        pm01.PM01Parse(rx_header, const_cast<uint8_t*>(frame.data));
+    }
 
 } // namespace BSP::Power

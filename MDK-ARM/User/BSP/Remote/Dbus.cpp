@@ -3,7 +3,9 @@
 
 namespace BSP ::Remote
 {
-Dr16 dr16;
+Dr16::Dr16() : state_watch_(100) // 100ms超时
+{
+}
 
 void Dr16::Init()
 {
@@ -43,23 +45,30 @@ void Dr16::UpdateStatus()
     auto &part1 alignas(uint64_t) = *reinterpret_cast<Dr16DataPart1 *>(&data_part1_);
     auto channel_to_double = [](uint16_t value) { return (static_cast<int32_t>(value) - 1024) / 660.0; };
 
-    joystick_right_.x = channel_to_double(static_cast<uint16_t>(part1.joystick_channel0));
-    joystick_right_.y = channel_to_double(static_cast<uint16_t>(part1.joystick_channel1));
-    joystick_left_.x = channel_to_double(static_cast<uint16_t>(part1.joystick_channel2));
+    joystick_right_.y = -channel_to_double(static_cast<uint16_t>(part1.joystick_channel1));
+    joystick_right_.x = -channel_to_double(static_cast<uint16_t>(part1.joystick_channel0));
     joystick_left_.y = channel_to_double(static_cast<uint16_t>(part1.joystick_channel3));
+    joystick_left_.x = channel_to_double(static_cast<uint16_t>(part1.joystick_channel2));
 
     switch_right_ = static_cast<Switch>(part1.switch_right);
     switch_left_ = static_cast<Switch>(part1.switch_left);
 
     auto &part2 alignas(uint64_t) = *reinterpret_cast<Dr16DataPart2 *>(&data_part2_);
-    mouse_vel_.x = part2.mouse_velocity_x / 32768.0;
-    mouse_vel_.y = part2.mouse_velocity_y / 32768.0;
+    mouse_vel_.x = -(part2.mouse_velocity_x / 32768.0);
+    mouse_vel_.y = -(part2.mouse_velocity_y / 32768.0);
 
     mouse_.left = part2.mouse_left;
     mouse_.right = part2.mouse_right;
 
     auto &part3 alignas(uint64_t) = *reinterpret_cast<Dr16DataPart3 *>(&data_part3_);
     keyboard_ = part3.keyboard;
+    sw_ = channel_to_double(static_cast<uint16_t>(part3.sw));
+    
+    // 更新状态监视器
+    state_watch_.UpdateLastTime();
+    state_watch_.UpdateTime();
+    state_watch_.CheckStatus(); 
+
 }
 
 /**
@@ -75,7 +84,6 @@ void Dr16::Parse(UART_HandleTypeDef *huart, int Size)
     {
         SaveData(pData);
         UpdateStatus();
-        dirTime.UpLastTime();
     }
     HAL_UARTEx_ReceiveToIdle_DMA(&ClickerHuart, pData, sizeof(pData));
 }
@@ -96,29 +104,8 @@ void Dr16::ClearORE(UART_HandleTypeDef *huart, uint8_t *pData, int Size)
     }
 }
 
-bool Dr16::ISDir()
+bool Dr16::isDrOnline()
 {
-    char Dir = 0;
-
-    Dir |= (remoteRight().x < -1 || remoteRight().x > 1);
-    Dir |= (remoteRight().y < -1 || remoteRight().y > 1);
-    Dir |= (remoteLeft().x < -1 || remoteLeft().x > 1);
-    Dir |= (remoteLeft().y < -1 || remoteLeft().y > 1);
-
-    this->Dir_Flag = dirTime.ISDir(50) | Dir;
-    if (this->Dir_Flag)
-    {
-        joystick_right_.x = 0;
-        joystick_right_.y = 0;
-        joystick_left_.x = 0;
-        joystick_left_.y = 0;
-
-        switch_right_ = Switch::UNKNOWN;
-        switch_left_ = Switch::UNKNOWN;
-
-        ClearORE(&ClickerHuart, pData, sizeof(pData));
-    }
-
-    return Dir_Flag;
+    return (state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
 }
 } // namespace BSP::Remote

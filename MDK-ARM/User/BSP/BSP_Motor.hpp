@@ -33,7 +33,7 @@ public:
 	virtual uint8_t ISDir() = 0;
 
 	// 数据解析
-	virtual void Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t RxHeaderData[]) = 0;
+	//virtual void Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t RxHeaderData[]) = 0;
 };
 
 

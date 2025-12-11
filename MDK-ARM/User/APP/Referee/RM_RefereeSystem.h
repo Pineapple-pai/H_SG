@@ -193,7 +193,7 @@ graphic_data_struct_t RM_RefereeSystemSetInt(char *name, uint32_t layer, int32_t
 ext_client_custom_character_t RM_RefereeSystemSetStr(char *name, uint32_t layer, char *str, uint32_t start_x,
                                                      uint32_t start_y);
 // 断连
-bool RM_RefereeSystemDir();
+bool RM_RefereeSystemOnline();
 // 解析
 void RM_RefereeSystemParse(UART_HandleTypeDef *huart);
 } // namespace RM_RefereeSystem

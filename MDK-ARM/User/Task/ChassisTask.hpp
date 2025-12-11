@@ -1,7 +1,9 @@
 #pragma once
 #include "../APP/State.hpp"
 #include "../Algorithm/alg_slope.h"
-#include "Variable.hpp"
+
+#include "../BSP/Motor/Lk/Lk_motor.hpp"
+#include "../BSP/Motor/Dji/DjiMotor.hpp"
 /**
  * @brief 底盘控制任务
  * @detail 实现移动底盘的状态控制逻辑
@@ -72,6 +74,7 @@ class Chassis_Task : public Task
         CAN_Send();
     }
     void MoveTarget();
+
 
 };
     inline float ApplySlope(Class_Slope& slope, float target, float now_real) {

@@ -1,59 +1,52 @@
 #include "CallBack.hpp"
 #include "../APP/Referee/RM_RefereeSystem.h"
-#include "../BSP/Dbus.hpp"
+#include "../BSP/Remote/Dbus.hpp"
 #include "../BSP/Power/PM01.hpp"
 #include "../BSP/SuperCap/SuperCap.hpp"
 #include "../Task/CommunicationTask.hpp"
-#include "My_hal.hpp"
 #include "Variable.hpp"
-
+#include "../HAL/CAN/can_hal.hpp"
+#include "../HAL/UART/uart_hal.hpp"
 #include <algorithm>
 
-// can_filo0中断接收
-CAN_RxHeaderTypeDef RxHeader; // can接收数据
-uint8_t RxHeaderData[8] = {0};
+uint8_t dbus_rx_buffer[18];
+uint8_t referee_rx_buffer[18];
 
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-    // 接受信息
-    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxHeaderData);
-    if (hcan == &hcan1)
-    {
-            Motor3508.Parse(RxHeader, RxHeaderData);
-            Motor6020.Parse(RxHeader, RxHeaderData);    
-    }
+    HAL::CAN::Frame rx_frame;
+    auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
 
-}
-// can_fifo1中断接收
-CAN_RxHeaderTypeDef CAN2_RxHeader; // can接收数据
-uint8_t CAN2_RxHeaderData[8] = {0};
-void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
-{
-    // 接受信息
-    HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &CAN2_RxHeader, CAN2_RxHeaderData);
-    if (hcan == &hcan2)
+    if (hcan == can1.get_handle())
     {
-        //		pm01.PM01Parse(RxHeader,RxHeaderData);
-        // MeterPower.Parse(RxHeader, RxHeaderData);
-        // BSP::Power::pm01.PM01Parse(RxHeader, RxHeaderData);
-        if (CAN2_RxHeader.StdId == CAN_GIMBAL_TO_CHASSIS_FRAME1_ID ||
-            CAN2_RxHeader.StdId == CAN_GIMBAL_TO_CHASSIS_FRAME2_ID ||
-            CAN2_RxHeader.StdId == CAN_GIMBAL_TO_CHASSIS_FRAME3_ID) {
-            Gimbal_to_Chassis_Data.HandleCANMessage(CAN2_RxHeader.StdId, CAN2_RxHeaderData);
-        } else {
-        BSP::Power::pm01.PM01Parse(CAN2_RxHeader, CAN2_RxHeaderData);
-        BSP::SuperCap::cap.Parse(CAN2_RxHeader, CAN2_RxHeaderData);
-        }
+        can1.receive(rx_frame);  // receive()内部会自动触发所有注册的回调
     }
 }
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+extern "C" void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-    BSP::Remote::dr16.Parse(huart, Size);
+    HAL::CAN::Frame rx_frame;
+    auto &can2 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can2);
+
+    if (hcan == can2.get_handle())
+    {
+        can2.receive(rx_frame);  // receive()内部会自动触发所有注册的回调
+    }
 }
 
-// UART中断
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 {
-    // Gimbal_to_Chassis_Data.Data_receive(huart);
-    RM_RefereeSystem::RM_RefereeSystemParse(huart);
+    // 获取UART实例
+    auto& uart3 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart3);
+    auto& uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
+    if(huart == uart3.get_handle()) {
+        // 调用您的解析函数
+        BSP::Remote::dr16.Parse(huart, Size);
+        HAL::UART::Data dbus_rx_data{dbus_rx_buffer, sizeof(dbus_rx_buffer)};
+        //uart3.receive_dma_idle(dbus_rx_data);
+    }
+    else if(huart == uart6.get_handle())
+    {
+        RM_RefereeSystem::RM_RefereeSystemParse(huart);
+        HAL::UART::Data referee{referee_rx_buffer, sizeof(referee_rx_buffer)};
+    }
 }

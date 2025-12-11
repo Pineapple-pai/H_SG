@@ -3,12 +3,13 @@
 #include "../BSP/StaticTime.hpp"
 #include "memory"
 #include "string.h"
+#include "../BSP/state_watch.hpp"
 #define RM_RefereeSystemHuart huart6
 using namespace RM_RefereeSystem;
 using namespace RM_RefereeSystemCRC;
 // 死亡时间
-RM_StaticTime dirTime;
-// �.�连标记
+BSP::WATCH_STATE::StateWatch state_watch(100);
+// 断连标记
 bool RM_RefereeSystemDirFlag = 0;
 // 接收数据
 uint8_t RM_RefereeSystemp8Data = 0;
@@ -495,20 +496,20 @@ void RM_RefereeSystemGetData(uint8_t RM_pData)
     }
 }
 // 断连
-bool RM_RefereeSystemDir()
+bool RM_RefereeSystemOnline()
 {
-    RM_RefereeSystemDirFlag = dirTime.ISDir(1000);
-    if (RM_RefereeSystemDirFlag == false)
-        RM_RefereeSystemInit();
-    return RM_RefereeSystemDirFlag;
+    state_watch.UpdateTime();
+    state_watch.CheckStatus();
+    return (state_watch.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
 }
+
 // 解析
 void RM_RefereeSystemParse(UART_HandleTypeDef *huart)
 {
     if (huart == &RM_RefereeSystemHuart)
     {
         // 更新断连时间
-        dirTime.UpLastTime();
+        state_watch.UpdateLastTime();
         // 获取解析数据
         RM_RefereeSystemGetData(RM_RefereeSystemp8Data);
         HAL_UART_Receive_IT(&RM_RefereeSystemHuart, &RM_RefereeSystemp8Data, sizeof(RM_RefereeSystemp8Data));

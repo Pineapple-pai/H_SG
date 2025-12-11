@@ -10,6 +10,7 @@ namespace UI::Dynamic
         void VisionMode();
         void VisionArmor();
         void darw_UI();
+        void ChassisMode();
     };
 
     inline darw_dynamic UI_dynamic;

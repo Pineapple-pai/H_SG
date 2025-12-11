@@ -1,24 +1,52 @@
 #pragma once
-#include "../BSP/StaticTime.hpp"
+
 
 #include "stdint.h"
 #include "usart.h"
+#include "../BSP/state_watch.hpp"
 
 #define ClickerHuart huart3
 #define REMOTE_MAX_LEN 18
 
 namespace BSP ::Remote
 {
+// 统一的键盘结构体定义
+struct __attribute__((packed)) Keyboard
+{
+    static inline Keyboard zero() // 一键初始化，全部强转为0
+    {
+        constexpr uint16_t zero = 0;
+        return *reinterpret_cast<const Keyboard *>(&zero);
+    }
+
+    bool w : 1;
+    bool s : 1;
+    bool a : 1;
+    bool d : 1;
+    bool shift : 1;
+    bool ctrl : 1;
+    bool q : 1;
+    bool e : 1;
+    bool r : 1;
+    bool f : 1;
+    bool g : 1;
+    bool z : 1;
+    bool x : 1;
+    bool c : 1;
+    bool v : 1;
+    bool b : 1;
+};
+
 class Dr16
 {
   public: // 公有成员函数
-    Dr16() = default;
+    Dr16();
 
     // 遥控器初始化
     void Init();
     // 解析数据
     void Parse(UART_HandleTypeDef *huart, int Size);
-    bool ISDir();
+    bool isDrOnline();
 
     struct Vector
     {
@@ -41,32 +69,6 @@ class Dr16
         MIDDLE = 3
     };
 
-    struct __attribute__((packed)) Keyboard
-    {
-        static inline Keyboard zero() // 一键初始化，全部强转为0
-        {
-            constexpr uint16_t zero = 0;
-            return *reinterpret_cast<const Keyboard *>(&zero);
-        }
-
-        bool w : 1;
-        bool s : 1;
-        bool a : 1;
-        bool d : 1;
-        bool shift : 1;
-        bool ctrl : 1;
-        bool q : 1;
-        bool e : 1;
-        bool r : 1;
-        bool f : 1;
-        bool g : 1;
-        bool z : 1;
-        bool x : 1;
-        bool c : 1;
-        bool v : 1;
-        bool b : 1;
-    };
-
   private: // 私有成员函数
     // 遥控器数据解析
     void SaveData(const uint8_t *pData);
@@ -83,9 +85,8 @@ class Dr16
         uint64_t joystick_channel2 : 11;
         uint64_t joystick_channel3 : 11;
 
+        uint64_t switch_right : 2;
         uint64_t switch_left : 2;
-		uint64_t switch_right : 2;
-
 
         uint64_t padding : 16;
     };
@@ -103,7 +104,7 @@ class Dr16
     struct __attribute__((packed)) Dr16DataPart3
     {
         Keyboard keyboard;
-        uint16_t unused;
+        uint16_t sw;
     };
 
     struct __attribute__((packed)) Mouse
@@ -126,6 +127,8 @@ class Dr16
     uint64_t data_part2_;
     uint64_t data_part3_;
 
+    double sw_;
+
     // 调用zero初始化
     Vector joystick_right_ = Vector::zero();
     Vector joystick_left_ = Vector::zero();
@@ -136,8 +139,10 @@ class Dr16
 
     Mouse mouse_ = Mouse::zero();
     Keyboard keyboard_ = Keyboard::zero();
+    
+    // 添加状态监视器
+    BSP::WATCH_STATE::StateWatch state_watch_{100}; // 100ms超时
 
-    RM_StaticTime dirTime;
 
   public: // get方法
     /**
@@ -210,10 +215,14 @@ class Dr16
         return keyboard_;
     }
 
-    
+    inline double sw()
+    {
+        return sw_;
+    }
 };
 
-extern Dr16 dr16;
+inline Dr16 dr16;
+
 } // namespace BSP::Remote
 #ifdef __cplusplus
 extern "C"

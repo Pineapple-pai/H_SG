@@ -313,7 +313,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>2</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -322,7 +322,7 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>3</wLevel>
+            <wLevel>1</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
@@ -604,14 +604,54 @@
           <GroupName>HAL</GroupName>
           <Files>
             <File>
-              <FileName>HAL.cpp</FileName>
+              <FileName>can_bus_impl.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\User\HAL\HAL.cpp</FilePath>
+              <FilePath>.\User\HAL\CAN\impl\can_bus_impl.cpp</FilePath>
             </File>
             <File>
-              <FileName>My_HAL.cpp</FileName>
+              <FileName>can_device_impl.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\User\HAL\My_HAL.cpp</FilePath>
+              <FilePath>.\User\HAL\CAN\impl\can_device_impl.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>can_bus.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\HAL\CAN\interface\can_bus.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>can_device.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\HAL\CAN\interface\can_device.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>can_hal.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\HAL\CAN\can_hal.hpp</FilePath>
+            </File>
+            <File>
+              <FileName>uart_bus_impl.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\HAL\UART\impl\uart_bus_impl.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>uart_device_impl.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\HAL\UART\impl\uart_device_impl.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>uart_bus.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\HAL\UART\interface\uart_bus.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>uart_device.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\HAL\UART\interface\uart_device.hpp</FilePath>
+            </File>
+            <File>
+              <FileName>uart_hal.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\HAL\UART\uart_hal.hpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -634,11 +674,6 @@
               <FilePath>.\User\BSP\BSP_Motor.cpp</FilePath>
             </File>
             <File>
-              <FileName>Dbus.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\User\BSP\Dbus.cpp</FilePath>
-            </File>
-            <File>
               <FileName>PM01.hpp</FileName>
               <FileType>5</FileType>
               <FilePath>.\User\BSP\Power\PM01.hpp</FilePath>
@@ -648,21 +683,36 @@
               <FileType>5</FileType>
               <FilePath>.\User\BSP\SuperCap\SuperCap.hpp</FilePath>
             </File>
+            <File>
+              <FileName>DjiMotor.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\BSP\Motor\Dji\DjiMotor.hpp</FilePath>
+            </File>
+            <File>
+              <FileName>MotorBase.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\BSP\Motor\MotorBase.hpp</FilePath>
+            </File>
+            <File>
+              <FileName>Lk_motor.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\BSP\Motor\Lk\Lk_motor.hpp</FilePath>
+            </File>
+            <File>
+              <FileName>state_watch.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\BSP\state_watch.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Dbus.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\BSP\Remote\Dbus.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>App</GroupName>
           <Files>
-            <File>
-              <FileName>Dji_Motor.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\User\APP\Dji_Motor.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Dm_Motor.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\User\APP\Dm_Motor.cpp</FilePath>
-            </File>
             <File>
               <FileName>PowerMeter.cpp</FileName>
               <FileType>8</FileType>

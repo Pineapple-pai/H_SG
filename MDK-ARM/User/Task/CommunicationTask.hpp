@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../BSP/Dbus.hpp"
+#include "../BSP/Remote/Dbus.hpp"
 #include "../BSP/StaticTime.hpp"
 #include "EvenTask.hpp"
 #include "stdxxx.hpp"
@@ -54,14 +54,14 @@
 
 // CAN通信相关定义
 #define CAN_Chassis_to_Gimbal_BASE_ID 0x300    // 基础ID
-#define CAN_Chassis_to_Gimbal_FRAME1_ID 0x301  // 第一帧ID
-#define CAN_Chassis_to_Gimbal_FRAME2_ID 0x302  // 第二帧ID
-#define CAN_Chassis_to_Gimbal_FRAME3_ID 0x303  // 第三帧ID
+#define CAN_C2G_FRAME1_ID 0x301  // 第一帧ID
+#define CAN_C2G_FRAME2_ID 0x302  // 第二帧ID
+#define CAN_C2G_FRAME3_ID 0x303  // 第三帧ID
 // 添加云台发送的ID（用于底盘接收）
 #define CAN_GIMBAL_TO_CHASSIS_BASE_ID 0x400
-#define CAN_GIMBAL_TO_CHASSIS_FRAME1_ID 0x401
-#define CAN_GIMBAL_TO_CHASSIS_FRAME2_ID 0x402
-#define CAN_GIMBAL_TO_CHASSIS_FRAME3_ID 0x403
+#define CAN_G2C_FRAME1_ID 0x401
+#define CAN_G2C_FRAME2_ID 0x402
+#define CAN_G2C_FRAME3_ID 0x403
 
 #endif
 
@@ -93,7 +93,7 @@ class Gimbal_to_Chassis
     //void Data_receive(UART_HandleTypeDef *huart);
     void Data_receive();
     void Init();
-    bool ISDir();
+    bool isConnectOnline();  // 添加声明
     void Transmit();
 
   private:
@@ -121,7 +121,7 @@ class Gimbal_to_Chassis
         uint8_t stop : 1;
     };
 
-    struct __attribute__((packed)) UiList // 底盘模式
+    struct __attribute__((packed)) UiList // UI数据
     {
         uint8_t MCL : 1;
         uint8_t BP : 1;
@@ -164,7 +164,7 @@ class Gimbal_to_Chassis
     uint8_t head = 0xA5; // 帧头
 
     bool is_dir;
-    RM_StaticTime dirTime;
+    //RM_StaticTime dirTime;
 
     struct Direction direction;
     struct ChassisMode chassis_mode;

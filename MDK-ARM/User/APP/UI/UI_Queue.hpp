@@ -54,7 +54,7 @@ namespace UI
     class send_graphic_queue // 发送数据队列
     {
     public:
-        RM_StaticTime dirTime;                                           // 运行时间
+        //RM_StaticTime dirTime;                                           // 运行时间
         RM_RefereeSystem::graphic_data_struct_t graphic_data_struct[50]; // 图层数据
         // 图案
         int8_t size;
@@ -92,7 +92,7 @@ namespace UI
                 return false;
             if (size == 0)
                 return true;
-            if (!dirTime.ISOne(100))
+            //if (!dirTime.ISOne(100))
                 return false;
             if (size >= 7)
                 send_graphic_data_struct_size = 7;
@@ -122,8 +122,8 @@ namespace UI
                 return false;
             if (wz_size == 0)
                 return true;
-            if (!dirTime.ISOne(100))
-                return false;
+            // if (!dirTime.ISOne(100))
+                // return false;
             if (wz_size != 0) {
                 RM_RefereeSystem::RM_RefereeSystemSendStr(ext_client_custom_character[wz_size - 1]);
                 wz_size--;
@@ -136,8 +136,8 @@ namespace UI
         {
             if (is_Delete_all == false)
                 return true;
-            if (!dirTime.ISOne(100))
-                return false;
+            // if (!dirTime.ISOne(100))
+            //     return false;
             if (is_Delete_all == true) {
                 RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::DeleteAll);
                 RM_RefereeSystem::RM_RefereeSystemDelete(RM_RefereeSystem::DeleteAll, 0);

@@ -2,13 +2,13 @@
 #include "../Task/CommunicationTask.hpp"
 #include "../BSP/Power/PM01.hpp"
 #include "../UI_Queue.hpp"
-#include "../HAL/HAL.hpp"
+//#include "../HAL/HAL.hpp"
 #include "../APP/Variable.hpp"
 #include "../Task/PowerTask.hpp"
 #include "../BSP/Power/PM01.hpp"
 #include "../APP/Referee/RM_RefereeSystem.h"
 #include "../BSP/SuperCap/SuperCap.hpp"
-
+using BSP::Motor::Dji::Motor3508;
 #include <stdio.h>
 float sin_tick;
 int16_t pitch_out, cap_out, speed_out;
@@ -58,10 +58,54 @@ namespace UI::Dynamic
         //		UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("vision", 3, 166, 193, 956, 520, 360, 360));
         // 视觉模式背景
     }
+    void darw_dynamic::ChassisMode()
+    {
+            static int8_t lastMode = -1; // 初始值设为-1或其他不可能的值
+        
+        // 获取当前底盘模式
+        int8_t currentMode = 0;
+        
+        if (Gimbal_to_Chassis_Data.getUniversal()) {
+            currentMode = 1; // 万向模式
+        } else if (Gimbal_to_Chassis_Data.getFollow()) {
+            currentMode = 2; // 底盘跟随模式
+        } else if (Gimbal_to_Chassis_Data.getRotating()) {
+            currentMode = 3; // 小陀螺模式
+        }
+
+        if (currentMode != lastMode) {
+            // 清除所有模式显示
+            RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateDelete);
+            UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "NOR", 730, 180));
+            UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "ROT", 930, 180));
+            UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "FOL", 1130, 180));
+
+            // 设置选中模式的高亮显示
+            RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateAdd);
+            RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorYellow);
+            
+            switch(currentMode) {
+                case 1: // 普通模式
+                    UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "NOR", 730, 180));
+                    break;
+                case 2: // 底盘跟随模式
+                    UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "FOL", 1130, 180));
+                    break;
+                case 3: // 小陀螺模式
+                    UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "ROT", 930, 180));
+                    break;
+                default:
+                    break;
+            }
+            
+            // 更新上次模式值
+            lastMode = currentMode;
+        }
+    }
 
     void darw_dynamic::curPower()
     {
-        uint16_t super_cap        = (BSP::Power::pm01.cout_voltage - 12) * 3.3;
+        uint16_t super_cap = (BSP::Power::pm01.cout_voltage - 12) * 3.3;
         static uint16_t lastvalue = 0;
 
         // 绘制超电能量调
@@ -88,15 +132,15 @@ namespace UI::Dynamic
     void darw_dynamic::VisionArmor()
     {
         // 视觉点
-        auto aimX         = Gimbal_to_Chassis_Data.getAimX();
-        auto aimY         = Gimbal_to_Chassis_Data.getAimY();
+        auto aimX = Gimbal_to_Chassis_Data.getAimX();
+        auto aimY = Gimbal_to_Chassis_Data.getAimY();
         static bool is_up = false;
 
         if (aimX != 0 && aimY != 0) {
             if (is_up == false) {
                 is_up = true;
-                RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateAdd);
-                UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, aimX * 2.75 + 580, aimY * 2.05 + 275, 20));
+            RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateAdd);
+            UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetCircle("vsA", 4, aimX * 2.75 + 580, aimY * 2.05 + 275, 20));
             }
             RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(RM_RefereeSystem::OperateRevise);
             RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorYellow);
@@ -118,14 +162,14 @@ namespace UI::Dynamic
         if (UI_send_queue.send_delet_all() == true && UI_send_queue.is_up_ui == true && UI_send_queue.send_wz() == true && UI_send_queue.send() == true) {
             yaw_e_rad = ((Gimbal_to_Chassis_Data.getEncoderAngleErr()) / 0.017453 + 180); // 获取yaw误差
 
-            // pitch_out       = HAL::sinf(2 * 3.14 * sin_tick * 0.5) * 40 + 90; // 示例，pitch起始角度为90，上下40°范围
+            // pitch_out       = sinf(2 * 3.14 * sin_tick * 0.5) * 40 + 90; // 示例，pitch起始角度为90，上下40°范围
             // yaw_out         = Gimbal_to_Chassis_Data.getEncoderAngleErr();    // 示例，yaw过零处理
-            cap_out = HAL::sinf(2 * 3.14 * sin_tick * 0.5) * 20 + 21; // 示例40左右，从271开始到311
+            cap_out = sinf(2 * 3.14 * sin_tick * 0.5) * 20 + 21; // 示例40左右，从271开始到311
 
             //			speed_out =
-            speed_out = HAL::sinf(2 * 3.14 * sin_tick * 0.5) * 60 + 60; // 满速度为120
+            speed_out = sinf(2 * 3.14 * sin_tick * 0.5) * 60 + 60; // 满速度为120
 
-            vel = (fabs(Motor3508.GetRPMFeedback(0)) + fabs(Motor3508.GetRPMFeedback(1)) + fabs(Motor3508.GetRPMFeedback(1)) + fabs(Motor3508.GetRPMFeedback(3))) / 4 / 62;
+            vel = (fabs(BSP::Motor::Dji::Motor3508.getVelocityRpm(0)) + fabs(BSP::Motor::Dji::Motor3508.getVelocityRpm(1)) + fabs(BSP::Motor::Dji::Motor3508.getVelocityRpm(2)) + fabs(BSP::Motor::Dji::Motor3508.getVelocityRpm(3))) / 4 / 62;
 
             //            RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
             //            RM_RefereeSystem::RM_RefereeSystemSetStringSize(15);
@@ -139,15 +183,15 @@ namespace UI::Dynamic
             RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("power", 1, power, power + 2, 960, 540, 380, 380));
 
+            ChassisMode();
             VisionMode();
-
             VisionArmor();
             curPower();
             if (yaw_e_rad >= 360) {
                 yaw_e_rad -= 360;
             }
 
-            // // 绘制小陀螺指示
+            //绘制小陀螺指示
             RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorPink);
             RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("gyro_Init", 2, yaw_e_rad + 210, yaw_e_rad + 160, 1450, 750, 80, 80));

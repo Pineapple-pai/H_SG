@@ -1,31 +1,18 @@
 #include "Variable.hpp"
-#include "My_hal.hpp"
-#include "alg_slope.h"
+
+#include "../Algorithm/alg_slope.h"
 uint32_t Send_ms;
 
-// 存储发送的数据
-Motor_send_data_t msd_6020;
-Motor_send_data_t msd_3508_2006;
-
-// 设置电机数量，ID号
-Dji_Motor_Data _Motor2006_[_Motor2006_SIZE] = {0};  uint8_t _Motor2006_ID_[_Motor2006_SIZE] = {0};
-Dji_Motor_Data _Motor3508_[_Motor3508_SIZE] = {0};  uint8_t _Motor3508_ID_[_Motor3508_SIZE] = {1, 2, 3, 4};
-Dji_Motor_Data _Motor6020_[_Motor6020_SIZE] = {0};  uint8_t _Motor6020_ID_[_Motor6020_SIZE] = {1, 2, 3, 4};
-
-Dji_Motor Motor2006(0x200, _Motor2006_SIZE, _Motor2006_, _Motor2006_ID_);
-Dji_Motor Motor3508(0x200, _Motor3508_SIZE, _Motor3508_, _Motor3508_ID_);
-Dji_Motor Motor6020(0x204, _Motor6020_SIZE, _Motor6020_, _Motor6020_ID_);
 
 //功率计    ID号0x212
 PowerMeter::Meter_Data _MeterPowerData_[_PowerMeter_SIZE] = {0}; uint8_t _PowerMeter_ID_[_PowerMeter_SIZE] = {2};
 PowerMeter::Meter MeterPower(0x210, _PowerMeter_SIZE, _MeterPowerData_, _PowerMeter_ID_);
 
 // PID角度环设置
-Kpid_t Kpid_6020_angle(0.1, 0, 0);
+Kpid_t Kpid_4005_angle(0, 0, 0);
 PID pid_angle_String[4];
-
-// PID角度环设置
-Kpid_t Kpid_6020_vel(40, 0, 0);
+// PID速度环设置
+Kpid_t Kpid_4005_vel(0, 0, 0);
 PID pid_vel_String[4];
 
 Kpid_t ude_Kpid_angle(0.2, 0, 0);
@@ -79,11 +66,23 @@ FeedTar feed_6020[4] = {
     {50, 5},
 };
 
-FeedTar feed_6020_1(50, 5);
-FeedTar feed_6020_2(50, 5);
-FeedTar feed_6020_3(50, 5);
-FeedTar feed_6020_4(50, 5);
+// 前馈
+FeedTar feed_4005[4] = {
+    {50, 5},
+    {50, 5},
+    {50, 5},
+    {50, 5},
+};
 
+// FeedTar feed_6020_1(50, 5);
+// FeedTar feed_6020_2(50, 5);
+// FeedTar feed_6020_3(50, 5);
+// FeedTar feed_6020_4(50, 5);
+
+// FeedTar feed_4005_1(50, 5);
+// FeedTar feed_4005_2(50, 5);
+// FeedTar feed_4005_3(50, 5);
+// FeedTar feed_4005_4(50, 5);
 
 // 创建工具实例
 Tools_t Tools;

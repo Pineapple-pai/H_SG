@@ -1,14 +1,15 @@
 #include "EvenTask.hpp"
 #include "../APP/Buzzer.hpp"
 #include "../APP/LED.hpp"
-#include "../BSP/Dbus.hpp"
+#include "../BSP/Remote/Dbus.hpp"
 #include "../BSP/Init.hpp"
 #include "../Task/CommunicationTask.hpp"
 #include "../BSP/SuperCap/SuperCap.hpp"
 #include "../BSP/Power/PM01.hpp"
-#include "Variable.hpp"
+#include "../APP/Variable.hpp"
 #include "cmsis_os2.h"
 #include "tim.h"
+#include "../BSP/state_watch.hpp"
 // using namespace Event;
 
 Dir Dir_Event;
@@ -28,12 +29,12 @@ void EventTask(void *argument)
     for (;;) {
         Dir_Event.Notify();
 
-        osDelay(1);
+        osDelay(5);
     }
 }
 bool Dir::Dir_Remote()
 {
-    bool Dir = BSP::Remote::dr16.ISDir();
+    bool Dir = BSP::Remote::dr16.isDrOnline();
 
     DirData.Dr16 = Dir;
 
@@ -42,10 +43,10 @@ bool Dir::Dir_Remote()
 
 bool Dir::Dir_String()
 {
-    bool Dir = Motor6020.ISDir();
-
+    // 通过电机类提供的公共方法来判断是否在线（未断联）
+    bool Dir = BSP::Motor::LK::Motor4005.isMotorOnline(0x141);
     for (int i = 0; i < 4; i++) {
-        DirData.String[i] = Motor6020.GetDir(Get_InitID_6020(i));
+        DirData.String[i] = BSP::Motor::LK::Motor4005.isMotorOnline(0x141 + i);
     }
 
     return Dir;
@@ -53,10 +54,11 @@ bool Dir::Dir_String()
 
 bool Dir::Dir_Wheel()
 {
-    bool Dir = Motor3508.ISDir();
+    // 通过电机类提供的公共方法来判断是否在线（未断联）
+    bool Dir = BSP::Motor::Dji::Motor3508.isMotorOnline(0x201);
 
     for (int i = 0; i < 4; i++) {
-        DirData.Wheel[i] = Motor3508.GetDir(Get_InitID_3508(i));
+        DirData.Wheel[i] = BSP::Motor::Dji::Motor3508.isMotorOnline(0x201 + i);
     }
 
     return Dir;
@@ -64,7 +66,7 @@ bool Dir::Dir_Wheel()
 
 bool Dir::Dir_MeterPower()
 {
-    bool Dir = MeterPower.ISDir();
+    bool Dir = MeterPower.isPmOnline();
 
     DirData.MeterPower = Dir;
 
@@ -73,7 +75,7 @@ bool Dir::Dir_MeterPower()
 
 bool Dir::Dir_Communication()
 {
-    DirData.Communication = Gimbal_to_Chassis_Data.ISDir();
+    DirData.Communication = Gimbal_to_Chassis_Data.isConnectOnline();
     if (DirData.Communication == true) {
         Gimbal_to_Chassis_Data.Init();
     }
@@ -83,7 +85,7 @@ bool Dir::Dir_Communication()
 
 bool Dir::Dir_SuperCap()
 {
-    bool Dir = BSP::SuperCap::cap.ISDir() && BSP::Power::pm01.ISDir();
+    bool Dir = BSP::SuperCap::cap.isScOnline() && BSP::Power::pm01.isPmOnline();
 
     DirData.SuperCap = Dir;
 

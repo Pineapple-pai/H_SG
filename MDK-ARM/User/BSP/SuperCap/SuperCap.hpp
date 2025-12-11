@@ -2,7 +2,8 @@
 #include "../BSP/StaticTime.hpp"
 #include "can.h"
 #include <memory>
-
+#include "../HAL/CAN/can_hal.hpp"
+#include "../BSP/state_watch.hpp"
 namespace BSP::SuperCap
 {
 class LH_Cap
@@ -10,9 +11,10 @@ class LH_Cap
   public:
     // 获取单例实例
 
-    void Parse(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData)
+    void ParseData(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData)
     {
-        if (RxHeader.StdId == 0x233)
+        const uint16_t received_id = HAL::CAN::ICanDevice::extract_id(RxHeader);
+        if (received_id == 0x233)
         {
             std::memcpy(&feedback_, pData, sizeof(feedback));
 
@@ -21,6 +23,9 @@ class LH_Cap
             feedback_.Out_Power = __builtin_bswap16(feedback_.Out_Power);
 
             UpdateStatus();
+            state_watch_.UpdateLastTime();
+            state_watch_.UpdateTime();
+            state_watch_.CheckStatus();
         }
     }
 
@@ -39,9 +44,19 @@ class LH_Cap
         CapState_ = static_cast<State>(feedback_.State);
         CapSwitch_ = static_cast<Switch>(feedback_.Is_On);
 		
-		dirTime.UpLastTime();
+		// dirTime.UpLastTime();
     }
-
+    void Parse(const HAL::CAN::Frame& frame)
+    {
+        CAN_RxHeaderTypeDef rx_header;
+        rx_header.StdId = frame.id;
+        rx_header.ExtId = frame.id;
+        rx_header.IDE = frame.is_extended_id ? CAN_ID_EXT : CAN_ID_STD;
+        rx_header.RTR = frame.is_remote_frame ? CAN_RTR_REMOTE : CAN_RTR_DATA;
+        rx_header.DLC = frame.dlc;
+        
+        ParseData(rx_header, frame.data);
+    }
     enum class State : uint8_t
     {
         NORMAL,
@@ -80,8 +95,12 @@ class LH_Cap
     uint8_t send_data[8];
     uint32_t sendID = 0x666;
 
-	RM_StaticTime dirTime;
+	//RM_StaticTime dirTime;
 	bool Dir_Flag = false;
+	
+	// 添加状态监视器
+    BSP::WATCH_STATE::StateWatch state_watch_{100}; // 100ms超时
+
   public:
     /**
      * @brief 获取底盘电压
@@ -136,15 +155,22 @@ class LH_Cap
     void sendCAN(CAN_HandleTypeDef *han, uint32_t pTxMailbox)
     {
         // 发送
-        HAL::Can_SendDATA(&hcan2, sendID, send_data, pTxMailbox);
+        auto& can_bus = HAL::CAN::get_can_bus_instance();
+        auto& can_device = can_bus.get_device(HAL::CAN::CanDeviceId::HAL_Can2);
+
+        HAL::CAN::Frame frame;
+        frame.id = sendID;
+        frame.dlc = 8;
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        std::memcpy(frame.data, send_data, 8);
+
+        can_device.send(frame);
     }
 	
-	bool ISDir()
+	bool isScOnline()
 	{
-		char Dir = 0;
-
-		this->Dir_Flag = dirTime.ISDir(100) | Dir;
-		return Dir_Flag;
+        return (state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
 	}
 };
 

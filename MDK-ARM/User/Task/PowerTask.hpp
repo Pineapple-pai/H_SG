@@ -1,20 +1,30 @@
 #pragma once
 
-#include "RLS.hpp"
-#include "Variable.hpp"
+#include "../Algorithm/RLS.hpp"
+#include "../APP/Variable.hpp"
 #include "arm_math.h"
 
 #define My_PI 3.14152653529799323
-// #define toque_const 1.502e-5f
+
+// 扭矩常数定义
 #define toque_const_3508 0.00036621
 #define rpm_to_rads_3508 0.0029088820f
 
 #define toque_const_6020 0.000128173828f
 #define rpm_to_rads_6020 0.104719555f
 
-//  #define toque_coefficient  1.99688994e-6f // (20/16384)*(0.3)*(187/3591)/9.55
+#define toque_const_4005 0.00011886f
+#define rpm_to_rads_4005 0.002652584f
 
 #define pMAX 120.0f
+
+// 前向声明
+namespace BSP::Motor::Dji {
+    template<uint8_t N> class GM3508;
+}
+namespace BSP::Motor::LK {
+    template<uint8_t N> class LK4005;
+}
 
 namespace SGPowerControl
 {
@@ -26,25 +36,99 @@ namespace SGPowerControl
         float pidMaxOutput; // pid max output
     };
 
+    // 电机数据获取接口
+    class IMotorInterface
+    {
+    public:
+        virtual ~IMotorInterface() = default;
+        virtual float GetCurrent(uint8_t index) const = 0; 
+        virtual float GetSpeed(uint8_t index) const = 0;
+        virtual float GetMaxCurrent() const = 0;
+ 
+    };
+
+    // DJI电机适配器
+    class DjiMotorAdapter : public IMotorInterface
+    {
+    private:
+        BSP::Motor::Dji::GM3508<4>& motor_;
+    public:
+        DjiMotorAdapter(BSP::Motor::Dji::GM3508<4>& motor) : motor_(motor) {}
+        
+        float GetCurrent(uint8_t index) const override {
+            return motor_.getCurrent(index);
+        }
+        
+        float GetSpeed(uint8_t index) const override {
+            return motor_.getVelocityRpm(index);
+        }
+        float GetMaxCurrent() const override 
+        {
+            return 16384.0f;       
+        }
+
+    };
+
+    // LK电机适配器
+    class LkMotorAdapter : public IMotorInterface
+    {
+    private:
+        BSP::Motor::LK::LK4005<4>& motor_;
+    public:
+        LkMotorAdapter(BSP::Motor::LK::LK4005<4>& motor) : motor_(motor) {}
+        float GetCurrent(uint8_t index) const override {
+            return motor_.getCurrent(index);
+        }
+        
+        float GetSpeed(uint8_t index) const override {
+            return motor_.getVelocityRpm(index);
+        }
+        float GetMaxCurrent() const override 
+        {
+            return 2048.0f;
+        }      
+    };
+
     class PowerUpData_t
     {
     private:
+        IMotorInterface* motor_interface_;
+        
     public:
-        // PowerUpData_t() = delete;
         Math::RLS<2> rls;
 
         Matrixf<2, 1> samples;
         Matrixf<2, 1> params;
 
         float MAXPower;
-        PowerUpData_t() : rls(1e-5f, 0.99999f) // 使用构造函数初始化列表进行初始化
+        PowerUpData_t() : rls(1e-5f, 0.99999f), motor_interface_(nullptr), Init_flag(false)
         {
+            // 初始化成员变量
+            k1 = k2 = k3 = k0 = 0.0f;
+            Energy = 0.0f;
+            EstimatedPower = 0.0f;
+            Cur_EstimatedPower = 0.0f;
+            EffectivePower = 0.0f;
+            E_lower = 0.0f;
+            E_upper = 0.0f;
+            
+            for (int i = 0; i < 4; i++) {
+                Initial_Est_power[i] = 0.0f;
+                pMaxPower[i] = 0.0f;
+                Cmd_MaxT[i] = 0.0;
+            }
+        }
+
+        ~PowerUpData_t() {
+            if (motor_interface_) {
+                delete motor_interface_;
+            }
         }
 
         bool is_RLS = false;
 
         /* data */
-        float k1, k2, k3 = 8.50f, k0;
+        float k1, k2, k3, k0;
 
         float Energy;
 
@@ -60,15 +144,26 @@ namespace SGPowerControl
 		
 		bool Init_flag;
 
-        // 定义阈值参数（需根据实际场景调整）
-        float E_lower; // 误差下限阈值（单位：rad/s或自定义）
-        float E_upper; // 误差上限阈值
+        // 定义阈值参数
+        float E_lower;
+        float E_upper;
 
-        void UpRLS(PID *pid, Dji_Motor &motor, const float toque_const, const float rpm_to_rads);
+        // 设置电机接口
+        void SetMotorInterface(IMotorInterface* interface) {
+            delete motor_interface_;
+            motor_interface_ = interface;
+        }
+
+        // 统一的功率计算方法
+        void UpRLS(PID *pid, const float toque_const, const float rpm_to_rads);
+        
         // 等比缩放的最大分配功率
-        void UpScaleMaxPow(PID *pid, Dji_Motor &motor);
+        void UpScaleMaxPow(PID *pid);
+        
         // 计算应分配的力矩
-        void UpCalcMaxTorque(float *final_Out, Dji_Motor &motor, PID *pid, const float toque_const, const float rpm_to_rads);
+        void UpCalcMaxTorque(float *final_Out, PID *pid, const float toque_const, const float rpm_to_rads);
+
+
     };
 
     class PowerTask_t
@@ -76,34 +171,43 @@ namespace SGPowerControl
     public:
         PowerTask_t()
         {
-            Wheel_PowerData.MAXPower     = 60;
-            Wheel_PowerData.k1           = 1.08900523;
-            Wheel_PowerData.k2           = 0.814881027;
-            Wheel_PowerData.k3           = 5;
+            SetDefaultConfig();
+        }
+        void SetDefaultConfig() {
+            // 轮向电机配置 (DJI 3508)
+            Wheel_PowerData.MAXPower     = 60.0f;
+            Wheel_PowerData.k1           = 1.08900523f;
+            Wheel_PowerData.k2           = 0.814881027f;
+            Wheel_PowerData.k3           = 5.0f;
             Wheel_PowerData.is_RLS       = true;
-            Wheel_PowerData.E_upper      = 1000;
-            Wheel_PowerData.E_lower      = 500;
-            Wheel_PowerData.params[0][0] = 1.08900523;
-            Wheel_PowerData.params[1][0] = 0.814881027;
+            Wheel_PowerData.E_upper      = 1000.0f;
+            Wheel_PowerData.E_lower      = 500.0f;
 
-            String_PowerData.MAXPower = 60 * 0.6f;
-            String_PowerData.k1       = 0.182967603;
-            String_PowerData.k2       = 8.78055;
-            String_PowerData.k3       = 5;
-            String_PowerData.is_RLS   = false;
-            String_PowerData.E_upper  = 500;
-            String_PowerData.E_lower  = 100;
+            // 舵向电机配置 (LK 4005)
+            String_PowerData.MAXPower    = 60.0f * 0.6f;
+            String_PowerData.k1          = 0.182967603f;
+            String_PowerData.k2          = 8.78055f;
+            String_PowerData.k3          = 5.0f;
+            String_PowerData.is_RLS      = false;
+            String_PowerData.E_upper     = 500.0f;
+            String_PowerData.E_lower     = 100.0f;
+        }
+
+        // 初始化电机接口
+        void InitMotorInterfaces(BSP::Motor::Dji::GM3508<4>& wheel_motor, BSP::Motor::LK::LK4005<4>& string_motor) {
+            Wheel_PowerData.SetMotorInterface(new DjiMotorAdapter(wheel_motor));
+            String_PowerData.SetMotorInterface(new LkMotorAdapter(string_motor));
         }
 
         PowerUpData_t String_PowerData;
         PowerUpData_t Wheel_PowerData;
 
-        inline float GetEstWheelPow()
+        inline float GetEstWheelPow() const
         {
             return Wheel_PowerData.EstimatedPower;
         }
 
-        inline float GetEstStringPow()
+        inline float GetEstStringPow() const
         {
             return String_PowerData.EstimatedPower;
         }
@@ -111,15 +215,18 @@ namespace SGPowerControl
         inline void setMaxPower(float maxPower)
         {
             Wheel_PowerData.MAXPower  = maxPower;
-            String_PowerData.MAXPower = maxPower * 0.6f; // 舵向电机限制百分之六十的功率上限
+            String_PowerData.MAXPower = maxPower * 0.6f;
         }
 
-        inline uint16_t getMAXPower()
+        inline uint16_t getMAXPower() const
         {
-            return Wheel_PowerData.MAXPower;
+            return static_cast<uint16_t>(Wheel_PowerData.MAXPower);
         }
+        
+
     };
 } // namespace SGPowerControl
+
 static inline bool floatEqual(float a, float b)
 {
     return fabs(a - b) < 1e-5f;

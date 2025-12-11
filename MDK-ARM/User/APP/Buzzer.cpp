@@ -1,6 +1,6 @@
 
 #include "../App/Buzzer.hpp"
-#include "HAL.hpp"
+
 #include "cmsis_os2.h"
 #include "tim.h"
 
@@ -12,8 +12,8 @@
  */
 void Buzzer::buzzer_on(uint16_t psc, uint16_t pwm)
 {
-    __HAL_TIM_PRESCALER(&htim4, psc);
-    __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_3, pwm);
+   __HAL_TIM_PRESCALER(&htim4, psc);
+   __HAL_TIM_SetCompare(&htim4, TIM_CHANNEL_3, pwm);
 }
 
 /**
@@ -30,10 +30,10 @@ bool Buzzer::Update()
 {
     Dir *dir = static_cast<Dir *>(sub);
 
-    dir_t[0] = dir->GetDir_Remote();
-    dir_t[1] = dir->GetDir_MeterPower();
+   // dir_t[0] = dir->GetDir_Remote();
+   // dir_t[1] = dir->GetDir_MeterPower();
     dir_t[2] = dir->GetDir_String();
-    dir_t[3] = dir->GetDir_Wheel();
+   // dir_t[3] = dir->GetDir_Wheel();
 
     if (dir->Ger_Init_Flag() && buzzerInit == false)
     {

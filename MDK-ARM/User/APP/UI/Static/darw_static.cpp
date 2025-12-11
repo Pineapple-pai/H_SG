@@ -138,15 +138,28 @@ namespace UI::Static
 
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         RM_RefereeSystem::RM_RefereeSystemSetWidth(1);
-        UI_send_queue.add(
-            RM_RefereeSystem::RM_RefereeSystemSetRectangle("dp9", 2, 1450 - 20, 750 - 61, 1450 + 20, 750 + 62));
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetRectangle("dp9", 2, 1450 - 20, 750 - 61, 1450 + 20, 750 + 62));
 
         RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
         UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("vis", 2, 166, 193, 956, 520, 360, 360));
 
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
+        RM_RefereeSystem::RM_RefereeSystemSetWidth(600);
+        UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetRectangle("Mode", 2, 660, 220, 1260, 100));
+
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "NOR", 730, 180));
+        
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "ROT", 930, 180));
+
+        RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
+        UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr("ModeChoose", 2, "FOL", 1130, 180));
 
         UI_send_queue.is_up_ui = true;
+
+
     }
 
     void darw_static::Init()
