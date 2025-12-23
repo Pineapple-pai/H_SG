@@ -10,6 +10,7 @@ Dr16::Dr16() : state_watch_(100) // 100ms超时
 void Dr16::Init()
 {
     HAL_UARTEx_ReceiveToIdle_DMA(&ClickerHuart, Dr16::pData, sizeof(Dr16::pData));
+    
 }
 
 /**
@@ -42,6 +43,7 @@ void Dr16::SaveData(const uint8_t *pData)
  */
 void Dr16::UpdateStatus()
 {
+    state_watch_.UpdateLastTime();
     auto &part1 alignas(uint64_t) = *reinterpret_cast<Dr16DataPart1 *>(&data_part1_);
     auto channel_to_double = [](uint16_t value) { return (static_cast<int32_t>(value) - 1024) / 660.0; };
 
@@ -65,10 +67,9 @@ void Dr16::UpdateStatus()
     sw_ = channel_to_double(static_cast<uint16_t>(part3.sw));
     
     // 更新状态监视器
-    state_watch_.UpdateLastTime();
-    state_watch_.UpdateTime();
-    state_watch_.CheckStatus(); 
 
+    state_watch_.UpdateTime();
+    state_watch_.CheckStatus();
 }
 
 /**
@@ -86,6 +87,12 @@ void Dr16::Parse(UART_HandleTypeDef *huart, int Size)
         UpdateStatus();
     }
     HAL_UARTEx_ReceiveToIdle_DMA(&ClickerHuart, pData, sizeof(pData));
+    if (HAL_GetTick() % 50 == 0) { // 每100ms检查一次
+        state_watch_.UpdateTime();
+        state_watch_.CheckStatus();
+    }
+    
+
 }
 
 /**

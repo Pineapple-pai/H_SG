@@ -105,10 +105,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // 只能放RTOS上面初始化
-	HAL_TIM_Base_Start_IT(&htim7);
+	//HAL_TIM_Base_Start_IT(&htim7);
 
   Init();
-
   //	    HAL_TIM_Base_Start(&htim4);
   //    //start pwm channel
   //    //开启PWM通道

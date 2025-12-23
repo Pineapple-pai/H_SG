@@ -17,6 +17,7 @@ int a=0;
 BSP::WATCH_STATE::StateWatch state_watch_(50);
 void CommunicationTask(void *argument)
 {
+	osDelay(500);
     for (;;)
     {
         Gimbal_to_Chassis_Data.Transmit();

@@ -6,12 +6,13 @@
 
 void RefeeTask(void *argument)
 {
-   UI::Static::UI_static.Init();
-    for (;;)
-    {
-       UI::Dynamic::UI_dynamic.darw_UI();
-       UI::UI_send_queue.send();
+//		UI::Static::UI_static.Init();
+//    osDelay(500);
+//    for (;;)
+//    {
+//       UI::Dynamic::UI_dynamic.darw_UI();
+//       UI::UI_send_queue.send();
 
-        osDelay(5);
-    }
+//        osDelay(5);
+//    }
 }

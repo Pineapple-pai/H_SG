@@ -141,7 +141,7 @@ void MX_FREERTOS_Init(void) {
   communicationTaHandle = osThreadNew(CommunicationTask, NULL, &communicationTa_attributes);
 
   /* creation of refeeTask */
-  refeeTaskHandle = osThreadNew(RefeeTask, NULL, &refeeTask_attributes);
+  //refeeTaskHandle = osThreadNew(RefeeTask, NULL, &refeeTask_attributes);
 
   /* creation of rlsTask */
   rlsTaskHandle = osThreadNew(RLSTask, NULL, &rlsTask_attributes);

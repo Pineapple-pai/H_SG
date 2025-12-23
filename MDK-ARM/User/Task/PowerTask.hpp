@@ -44,7 +44,6 @@ namespace SGPowerControl
         virtual float GetCurrent(uint8_t index) const = 0; 
         virtual float GetSpeed(uint8_t index) const = 0;
         virtual float GetMaxCurrent() const = 0;
- 
     };
 
     // DJI电机适配器
@@ -156,14 +155,17 @@ namespace SGPowerControl
 
         // 统一的功率计算方法
         void UpRLS(PID *pid, const float toque_const, const float rpm_to_rads);
-        
+    
         // 等比缩放的最大分配功率
         void UpScaleMaxPow(PID *pid);
-        
+    
         // 计算应分配的力矩
         void UpCalcMaxTorque(float *final_Out, PID *pid, const float toque_const, const float rpm_to_rads);
 
-
+        // 新增：能量环相关方法
+        void UpdateEnergy(float energy, float dt);  // 更新能量状态（使用缓冲能量）
+        float GetAvailableEnergy() const;           // 获取可用能量
+        float GetMaxPowerLimit() const;             // 获取当前最大功率限制
     };
 
     class PowerTask_t

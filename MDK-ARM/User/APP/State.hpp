@@ -1,6 +1,5 @@
 #pragma once
-#include <vector>
-#include <memory>
+#include <new>
 
 /**
  * @brief 状态处理器抽象基类
@@ -57,23 +56,60 @@ protected:
  */
 class TaskManager
 {
-public:
+private:
     static constexpr int MAX_TASKS = 8; // 支持最大任务数
+    Task* m_tasks[MAX_TASKS];           // 任务指针数组
+    int m_taskCount = 0;                // 当前任务数量
+
+public:
+    /**
+     * @brief 构造函数
+     */
+    TaskManager() {
+        for (int i = 0; i < MAX_TASKS; i++) {
+            m_tasks[i] = nullptr;
+        }
+    }
 
     /**
      * @brief 添加任务到管理器
-     * @tparam T 任务类型（必须继承自Task）
-     * @param args 任务构造参数
+     * @param task 任务指针
      * @return 添加成功返回true
      */
-    template <typename T, typename... Args>
-    bool addTask(Args &&...args)
+    bool addTask(Task* task)
     {
-        if (m_tasks.size() >= MAX_TASKS)
+        if (m_taskCount >= MAX_TASKS || task == nullptr)
             return false;
 
-        m_tasks.emplace_back(
-            std::make_unique<T>(std::forward<Args>(args)...));
+        m_tasks[m_taskCount] = task;
+        m_taskCount++;
+        return true;
+    }
+    
+    /**
+     * @brief 添加任务到管理器（模板版本）
+     * @tparam T 任务类型（必须继承自Task）
+     * @return 添加成功返回true
+     */
+    template<typename T>
+    bool addTask()
+    {
+        if (m_taskCount >= MAX_TASKS)
+            return false;
+
+        // 使用静态变量存储任务实例，避免栈变量生命周期问题
+        static T* task_instances[MAX_TASKS] = {nullptr};
+
+        // 创建任务实例（如果尚未创建）
+        if (task_instances[m_taskCount] == nullptr) {
+            task_instances[m_taskCount] = new(std::nothrow) T();
+            if (!task_instances[m_taskCount]) {
+                return false; // 内存分配失败
+            }
+        }
+
+        m_tasks[m_taskCount] = task_instances[m_taskCount];
+        m_taskCount++;
         return true;
     }
                 
@@ -83,13 +119,14 @@ public:
      */
     void updateAll()
     {
-        for (auto &task : m_tasks) {
-            if (task)
-                task->update();
+        for (int i = 0; i < m_taskCount; i++) {
+            if (m_tasks[i])
+                m_tasks[i]->update();
         }
     }
 
-private:
-    std::vector<std::unique_ptr<Task>> m_tasks;
+    // 析构函数
+    ~TaskManager() {
+        m_taskCount = 0;
+    }
 };
-

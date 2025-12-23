@@ -36,13 +36,14 @@
 // 	CONTROL_SIG 0 遥控器
 // 	CONTROL_SIG 1 上下板
 
-#define CONTROL_SIG 1
+#define CONTROL_SIG 0
 #if CONTROL_SIG == 0
 // 期望值切换
 #define TAR_LX BSP::Remote::dr16.remoteLeft().x
 #define TAR_LY BSP::Remote::dr16.remoteLeft().y
 #define TAR_RX BSP::Remote::dr16.remoteRight().x
 #define TAR_RY BSP::Remote::dr16.remoteRight().y
+#define TAR_VW BSP::Remote::dr16.sw()
 
 #elif CONTROL_SIG == 1
 // 模式切换
@@ -51,7 +52,7 @@
 #define TAR_VW (Gimbal_to_Chassis_Data.getRotatingVel() - 110) / 110.0f
 #define TAR_RX BSP::Remote::dr16.remoteRight().x
 #define TAR_RY BSP::Remote::dr16.remoteRight().y
-
+#endif
 // CAN通信相关定义
 #define CAN_Chassis_to_Gimbal_BASE_ID 0x300    // 基础ID
 #define CAN_C2G_FRAME1_ID 0x301  // 第一帧ID
@@ -63,7 +64,7 @@
 #define CAN_G2C_FRAME2_ID 0x402
 #define CAN_G2C_FRAME3_ID 0x403
 
-#endif
+//#endif
 
 class Communicat_Data
 {

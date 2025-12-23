@@ -4,29 +4,24 @@
 
 bool LED::Update(void)
 {
-    Dir *dir = static_cast<Dir *>(sub);
+Dir *dir = static_cast<Dir *>(sub);
 
-    uint8_t String = dir->GetDir_String();
-    uint8_t Wheel = dir->GetDir_Wheel();
-
-    if (dir->GetDir_String())
-    {
+    if (dir->isAnyStringOffline()) {
         uint32_t aRGB = RED;
         aRGB_led_show(aRGB);
         return false;
-    }
-    if (dir->GetDir_Wheel())
-    {
-        uint32_t aRGB = BULE;
+    } 
+    else if (dir->isAnyWheelOffline()) {
+        uint32_t aRGB = BLUE;
         aRGB_led_show(aRGB);
         return false;
-    }
-    if (dir->getDir_Communication())
-    {
-        uint32_t aRGB = PINK;
-        aRGB_led_show(aRGB);
-        return false;
-    }
+    } 
+    // if (dir->getDir_Communication())
+    // {
+    //     uint32_t aRGB = PINK;
+    //     aRGB_led_show(aRGB);
+    //     return false;
+    // }
     else
     {
         Normal_State();

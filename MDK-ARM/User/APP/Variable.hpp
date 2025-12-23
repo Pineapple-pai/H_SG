@@ -13,40 +13,8 @@
 #include "../Algorithm/alg_slope.h"
 #include "../BSP/Motor/Lk/Lk_motor.hpp"
 
-// 发送id
-// #define SEND_MOTOR_ID_2006 (0x200)
-// #define SEND_MOTOR_ID_3508 (0x200)
-// #define SEND_MOTOR_ID_6020 (0x1FF)
-// #define SEND_MOTOR_CurrentID_6020 (0x1FE)
-// #define SEND_MOTOR_ID_4005 (0x140)
-
-// //获取设置id
-// #define Get_MOTOR_SET_ID_2006(x) (x - 0x200)
-// #define Get_MOTOR_SET_ID_3508(x) (x - 0x200)
-// #define Get_MOTOR_SET_ID_6020(x) (x - 0x204)
-// #define Get_MOTOR_SET_ID_4005(x) (x - 0x140)
-
-// //获取设置stdid
-// #define Get_MOTOR_SET_STDID_2006(x) (x + 0x200)
-// #define Get_MOTOR_SET_STDID_3508(x) (x + 0x200)
-// #define Get_MOTOR_SET_STDID_6020(x) (x + 0x204)
-// #define Get_MOTOR_SET_STDID_4005(x) (x + 0x140)
-
-// #define Get_InitID_3508(x) (x + 0x201)
-// #define Get_InitID_6020(x) (x + 0x205)
-// #define Get_InitID_4005(x) (x + 0x141)
-//数量
-// #define _Motor2006_SIZE 1
-// #define _Motor3508_SIZE 4
-// #define _Motor6020_SIZE 4
-// #define _Motor4005_SIZE 4
 #define _PowerMeter_SIZE 1
 
-// ID号
-// #define L_Forward_6020_ID   0x205
-// #define L_Back_6020_ID      0x206
-// #define R_Back_6020_ID      0x207
-// #define R_Forward_6020_ID   0x208
 
 // // ID号
 // #define L_Forward_3508_ID   0x201
@@ -55,20 +23,20 @@
 // #define R_Forward_3508_ID   0x204
 
 // // ID号
-// #define L_Forward_4005_ID   0x141
-// #define L_Back_4005_ID      0x142
-// #define R_Back_4005_ID      0x143
-// #define R_Forward_4005_ID   0x144
+ #define L_Forward_4005_ID   0x141 254
+ #define L_Back_4005_ID      0x142 180.4
+ #define R_Back_4005_ID      0x143 25
+ #define R_Forward_4005_ID   0x144 340
 
 // #define Chassis_angle_Init_0x205 	6500 + 4096
 // #define Chassis_angle_Init_0x206 	404
 // #define Chassis_angle_Init_0x207 	6438 + 4096
 // #define Chassis_angle_Init_0x208 	5920
 
-#define Chassis_angle_Init_0x141    0
-#define Chassis_angle_Init_0x142    0
-#define Chassis_angle_Init_0x143    0
-#define Chassis_angle_Init_0x144    0
+#define Chassis_angle_Init_0x141    234.266968 + 180
+#define Chassis_angle_Init_0x142    296.350708 
+#define Chassis_angle_Init_0x143    253.306264
+#define Chassis_angle_Init_0x144    80.189209
 
 typedef struct
 {
@@ -93,20 +61,8 @@ typedef struct
 
 extern uint32_t Send_ms;
 
-// extern Motor_send_data_t msd_6020;
-// extern Motor_send_data_t msd_3508_2006;
-// extern Motor_send_data_t msd_4005;
-
-
 
 extern PowerMeter::Meter MeterPower;
-
-// PID角度环设置
-// extern Kpid_t Kpid_6020_angle;
-
-
-// extern Kpid_t Kpid_6020_vel;
-
 
 extern Kpid_t Kpid_4005_angle;
 extern PID pid_angle_String[4];
@@ -144,13 +100,7 @@ extern TD tar_vy;
 extern TD td_FF_Tar;
 extern TD td_Power[4];
 // 前馈
-// extern FeedTar feed_6020[4];
 extern FeedTar feed_4005[4];
-
-// extern FeedTar feed_6020_1;
-// extern FeedTar feed_6020_2;
-// extern FeedTar feed_6020_3;
-// extern FeedTar feed_6020_4;
 
 // extern FeedTar feed_4005_1;
 // extern FeedTar feed_4005_2;     

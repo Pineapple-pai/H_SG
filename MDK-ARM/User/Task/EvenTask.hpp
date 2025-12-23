@@ -90,6 +90,32 @@ public:
             observer->Update();
         }
     }
+        bool IsStringMotorConnected(uint8_t index) const {
+        if (index >= 1 && index <= 4) {
+            return DirData.String[index - 1];
+        }
+        return false;
+    }
+    
+    bool IsWheelMotorConnected(uint8_t index) const {
+        if (index >= 1 && index <= 4) {
+            return DirData.Wheel[index - 1];
+        }
+        return false;
+    }
+     bool isAnyStringOffline() const {
+        for(int i = 0; i < 4; i++) {
+            if(!DirData.String[i]) return true;
+        }
+        return false;
+    }
+    
+    bool isAnyWheelOffline() const {
+        for(int i = 0; i < 4; i++) {
+            if(!DirData.Wheel[i]) return true;
+        }
+        return false;
+    }
 
 private:
     bool Dir_String();

@@ -6,7 +6,7 @@
 
 #define RED     0xFFFF0000
 #define GREEN   0xFF00FF00
-#define BULE    0xFF0000FF
+#define BLUE    0xFF0000FF
 #define WHITE   0xFFFFFFFF
 
 #define YELLOW  0xFFFFFF00

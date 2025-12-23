@@ -35,6 +35,7 @@ private:
 
     void buzzer_off(void);
     void buzzer_on(uint16_t psc, uint16_t pwm);
+    void CheckMotorConnectionStatus(Dir *dir);
 
 public:
     int32_t dir_t[4];

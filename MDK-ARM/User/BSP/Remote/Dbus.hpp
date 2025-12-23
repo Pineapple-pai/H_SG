@@ -140,8 +140,7 @@ class Dr16
     Mouse mouse_ = Mouse::zero();
     Keyboard keyboard_ = Keyboard::zero();
     
-    // 添加状态监视器
-    BSP::WATCH_STATE::StateWatch state_watch_{100}; // 100ms超时
+
 
 
   public: // get方法
@@ -219,6 +218,8 @@ class Dr16
     {
         return sw_;
     }
+        // 添加状态监视器
+    BSP::WATCH_STATE::StateWatch state_watch_{100}; // 100ms超时
 };
 
 inline Dr16 dr16;

@@ -30,10 +30,7 @@ bool Buzzer::Update()
 {
     Dir *dir = static_cast<Dir *>(sub);
 
-   // dir_t[0] = dir->GetDir_Remote();
-   // dir_t[1] = dir->GetDir_MeterPower();
-    dir_t[2] = dir->GetDir_String();
-   // dir_t[3] = dir->GetDir_Wheel();
+    dir_t[0] = dir->GetDir_Remote();
 
     if (dir->Ger_Init_Flag() && buzzerInit == false)
     {
@@ -42,22 +39,57 @@ bool Buzzer::Update()
         buzzerInit = true;
     }
 
-    uint8_t String = dir->GetDir_String();
-    uint8_t Wheel = dir->GetDir_Wheel();
+    bool remote_online = dir->GetDir_Remote();
 
-    if (String)
+    static bool last_remote_online = true;
+
+    if (remote_online && !last_remote_online) 
+    {      
+        STOP();  // 遥控器复连接，关闭蜂鸣器
+    }
+
+    last_remote_online = remote_online;
+    
+    if (remote_online) 
     {
-        Buzzer::B(String);
+        // 检查是否有电机断联，如果有则持续报警
+        static uint32_t last_beep_time = 0;
+        uint32_t current_time = osKernelGetTickCount();
+        
+        // 查找第一个断联的电机并获取其ID
+        int disconnected_motor_id = 0;  // 改为0表示没有断联
+        
+        for (int i = 0; i < 4; i++) {
+            if (!dir->DirData.String[i]) {
+                disconnected_motor_id = i + 1; // 电机ID为1-4
+                break;
+            }
+        }
+        if (disconnected_motor_id == 0) {
+            for (int i = 0; i < 4; i++) {
+                if (!dir->DirData.Wheel[i]) {
+                    disconnected_motor_id = i + 1; // 电机ID为1-4
+                    break;
+                }
+            }
+        }        
+        // 如果有电机断联，每隔一段时间鸣叫对应次数
+        if (disconnected_motor_id > 0 && !is_busy && (current_time - last_beep_time > 2000)) {
+            B(disconnected_motor_id); // 按电机ID鸣叫对应次数
+            last_beep_time = current_time;
+        }
+        
+        osDelay(10);
+        return true;
+    } else {
+        if (!is_busy) {
+            B___(); // 长鸣
+        }
+        osDelay(10);
         return false;
     }
-    if (Wheel)
-    {
-        Buzzer::B(Wheel);
-        return false;
-    }
-    // buzzer_off();
+
     osDelay(10);
-
     return true;
 }
 
@@ -111,9 +143,9 @@ void Buzzer::B_()
     STOP();
     is_busy = true;
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 从50ms增加到150ms
     buzzer_off();
-    osDelay(950);
+    osDelay(850);  // 从950ms减少到850ms，保持总周期1秒
     is_busy = false;
 }
 
@@ -122,13 +154,13 @@ void Buzzer::B_B_()
     STOP();
     is_busy = true;
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(200);  // 增加间隔时间
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(850);
+    osDelay(500);  // 调整总间隔时间
     is_busy = false;
 }
 
@@ -137,19 +169,19 @@ void Buzzer::B_B_B_()
     STOP();
     is_busy = true;
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(150);  // 增加间隔时间
 
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(150);  // 增加间隔时间
 
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(750);
+    osDelay(400);  // 调整总间隔时间
 
     is_busy = false;
 }
@@ -159,24 +191,24 @@ void Buzzer::B_B_B_B_()
     STOP();
     is_busy = true;
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(150);  // 增加间隔时间
 
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(150);  // 增加间隔时间
 
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(150);  // 增加间隔时间
 
     buzzer_on(1, 10000);
-    osDelay(50);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(650);
+    osDelay(250);  // 调整总间隔时间
 
     is_busy = false;
 }
@@ -186,7 +218,7 @@ void Buzzer::B___()
     STOP();
     is_busy = true;
     buzzer_on(1, 10000);
-    osDelay(500);
+    osDelay(800);  // 增加长鸣时间
     is_busy = false;
 }
 
@@ -194,9 +226,9 @@ void Buzzer::B_CONTINUE()
 {
     is_busy = true;
     buzzer_on(1, 10000);
-    osDelay(100);
+    osDelay(150);  // 增加鸣叫时间
     buzzer_off();
-    osDelay(50);
+    osDelay(100);  // 调整间隔时间
 
     is_busy = false;
 }

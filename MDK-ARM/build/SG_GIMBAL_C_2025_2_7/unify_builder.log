@@ -138,3 +138,133 @@ Not enough information to list image symbols.
 Finished: 1 information, 0 warning and 7 error messages.
 
 
+[2025-12-17 19:17:06]	[info] incremental build: 86 source files changed
+These source files will be recompiled
+---
+'f:\H_SG\Core\Src\can.c': compiler options has been changed.
+'f:\H_SG\Core\Src\dma.c': compiler options has been changed.
+'f:\H_SG\Core\Src\freertos.c': source file has been changed.
+'f:\H_SG\Core\Src\gpio.c': compiler options has been changed.
+'f:\H_SG\Core\Src\main.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_hal_msp.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_hal_timebase_tim.c': compiler options has been changed.
+'f:\H_SG\Core\Src\stm32f4xx_it.c': compiler options has been changed.
+'f:\H_SG\Core\Src\system_stm32f4xx.c': compiler options has been changed.
+'f:\H_SG\Core\Src\tim.c': compiler options has been changed.
+'f:\H_SG\Core\Src\usart.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_can.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_exti.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ramfunc.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.c': compiler options has been changed.
+'f:\H_SG\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_uart.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\croutine.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\event_groups.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\list.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\portable\MemMang\heap_4.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\queue.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\stream_buffer.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\tasks.c': compiler options has been changed.
+'f:\H_SG\Middlewares\Third_Party\FreeRTOS\Source\timers.c': compiler options has been changed.
+'f:\H_SG\MDK-ARM\User\APP\Buzzer.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\CommunicationTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\LED.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\PowerMeter.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\RM_UI\ui_ROT.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\RM_UI\ui_default.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\RM_UI\ui_interface.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\Referee\RM_RefereeSystem.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\Referee\RM_RefereeSystemCRC.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\Remote\KeyBroad.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\State.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\Tools.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\UI\Dynamic\darw_dynamic.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\UI\Static\darw_static.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\UI\UI_Init\Init.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\UI\UI_Queue.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\APP\Variable.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Algorithm\PID.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Algorithm\Wheel.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Algorithm\alg_slope.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Algorithm\drv_math.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\BSP_Motor.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\Bsp_Can.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\Init.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\Power\PM01.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\Remote\Dbus.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\SuperCap\SuperCap.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\BSP\state_watch.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\ASSERT\assert.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\CAN\impl\can_bus_impl.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\CAN\impl\can_device_impl.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\CAN\interface\can_bus.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\CAN\interface\can_device.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\DWT\DWT.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\LOGGER\SEGGER\RTT\SEGGER_RTT.c': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\LOGGER\SEGGER\RTT\SEGGER_RTT_ASM_ARMv7M.S': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\LOGGER\SEGGER\RTT\SEGGER_RTT_printf.c': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\LOGGER\logger.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\UART\impl\uart_bus_impl.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\UART\impl\uart_device_impl.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\HAL\UART\interface\uart_bus.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Task\CallBack.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Task\ChassisTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Task\CommunicationTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Task\EvenTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Task\PowerTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\User\Task\RefeeTask.cpp': object (.o) file not exist
+'f:\H_SG\MDK-ARM\startup_stm32f407xx.s': source file has been changed.
+
+[2025-12-17 19:17:09]	compilation failed at : "f:\H_SG\MDK-ARM\User\APP\CommunicationTask.cpp", exit code: 1
+command: 
+  "D:\Keil_V5\ARM\ARMCLANG\bin\armclang.exe" --target=arm-arm-none-eabi -c -xc++ -std=c++17 -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Middlewares/Third_Party/FreeRTOS/Source/include -I../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -I../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I../Middlewares/ST/ARM/DSP/Inc -I.cmsis/include -IRTE/_SG_GIMBAL_C_2025_2_7 -I../USB_DEVICE -I../USB_DEVICE/App -I../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I../Middlewares/ST/STM32_USB_Device_Library -I../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I../USB_DEVICE/Target -D"USE_HAL_DRIVER" -D"STM32F407xx" -mfloat-abi=hard -mfpu=fpv4-sp-d16 -mcpu=cortex-m4 -mlittle-endian -O0 -fno-function-sections -funsigned-char -fno-rtti -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -g -o ./build/SG_GIMBAL_C_2025_2_7/.obj/User/APP/CommunicationTask.o -MMD ./User/APP/CommunicationTask.cpp
+   at unify_builder.Program.compileByMulThread(Int32 thrNum, CmdInfo[] cmds_, List`1 errLogs)
+   at unify_builder.Program.Main(String[] args_)
+---
+./User/APP/Remote/KeyBroad.cpp:1:10: fatal error: '../APP/Remote/KeyBroad.hpp' file not found
+#include "../APP/Remote/KeyBroad.hpp"
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+./User/APP/Referee/RM_RefereeSystemCRC.cpp:1:10: fatal error: '../APP/Referee/RM_RefereeSystemCRC.h' file not found
+#include "../APP/Referee/RM_RefereeSystemCRC.h"
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+./User/APP/RM_UI/ui_ROT.cpp:9:10: fatal error: '../Task/CommunicationTask.hpp' file not found
+#include "../Task/CommunicationTask.hpp"
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+In file included from ./User/APP/Tools.cpp:1:
+./User/APP/Tools.hpp:3:10: fatal error: 'stdxxx.hpp' file not found
+#include "stdxxx.hpp"
+         ^~~~~~~~~~~~
+1 error generated.
+In file included from ./User/APP/Referee/RM_RefereeSystem.cpp:1:
+In file included from ./User/APP/Referee/RM_RefereeSystem.h:2:
+./User/APP/Referee/../Referee/RM_RefereeSystemCRC.h:2:10: fatal error: '../BSP/stdxxx.hpp' file not found
+#include "../BSP/stdxxx.hpp"
+         ^~~~~~~~~~~~~~~~~~~
+1 error generated.
+In file included from ./User/APP/PowerMeter.cpp:1:
+./User/APP/PowerMeter.hpp:1:10: fatal error: 'BSP_Motor.hpp' file not found
+#include "BSP_Motor.hpp"
+         ^~~~~~~~~~~~~~~
+1 error generated.
+In file included from ./User/APP/CommunicationTask.cpp:1:
+./User/APP/CommunicationTask.hpp:3:10: fatal error: 'stdxxx.hpp' file not found
+#include "stdxxx.hpp"
+         ^~~~~~~~~~~~
+1 error generated.
+

@@ -102,10 +102,9 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
 
                 // 调用Configure处理数据
                 Configure(i, feedback_[i]);
-
                 this->state_watch_[i].UpdateLastTime();
                 this->state_watch_[i].UpdateTime();
-                this->state_watch_[i].CheckStatus(); 
+                this->state_watch_[i].CheckStatus();
             }
         }
     }
@@ -118,13 +117,10 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
      */
     void setCAN(int16_t data, int id)
     {
-        if (id < 1 || id > N) return; 
-    
-        int index = (id - 1) * 2;
-        if (index + 1 < 8) {  
-        msd[index] = data >> 8;
-        msd[index + 1] = data & 0xFF; 
-        }
+        // LK电机发送格式与DJI不同，需要根据具体命令调整
+        // 这里先使用类似DJI的格式
+        msd[(id - 1) * 2] = data >> 8;
+        msd[(id - 1) * 2 + 1] = data << 8 >> 8;
     }
 
     /**
@@ -135,8 +131,7 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
      */
     void sendCAN(CAN_HandleTypeDef *han, uint8_t id, uint8_t pTxMailbox)
     {
-        if (id < 1 || id > N) return;
-        this->send_can_frame(init_address + send_idxs_[id - 1], msd, 8, pTxMailbox);
+        this->send_can_frame(send_idxs_[id - 1], msd, 8, pTxMailbox);
     }
     /**
      * @brief 使能电机
@@ -146,7 +141,7 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
     void ON(CAN_HandleTypeDef *hcan, uint8_t id)
     {
         uint8_t data[8] = {0x88};
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8);
+        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
     }
 
     /**
@@ -157,7 +152,7 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
     void OFF(CAN_HandleTypeDef *hcan, uint8_t id)
     {
         uint8_t data[8] = {0x81};
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8);
+        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
     }
 
     /**
@@ -168,7 +163,7 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
     void clear_err(CAN_HandleTypeDef *hcan, uint8_t id)
     {
         uint8_t data[8] = {0x9B};
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8);
+        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
     }
 
     /**
@@ -193,7 +188,7 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
         data[6] = (encoder_value >> 16) & 0xFF;
         data[7] = (encoder_value >> 24) & 0xFF;
 
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8);
+        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
     }
 
     /**
@@ -218,7 +213,24 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
         data[6] = 0x00;
         data[7] = 0x00;
 
-       this->send_can_frame(init_address + send_idxs_[id - 1], data, 8);
+       this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
+    }
+
+    /**
+     * @brief 多电机控制
+     * 
+     * @param hcan CAN句柄
+     * @param iqControl 4个电机的转矩电流控制值数组
+     */
+    void MultControl(CAN_HandleTypeDef *hcan, const int16_t iqControl[4])
+    {
+        uint8_t data[8];
+       
+        for (int i = 0; i < 4; ++i) {
+        data[i * 2] = iqControl[i] & 0xFF;           
+        data[i * 2 + 1] = (iqControl[i] >> 8) & 0xFF; 
+    }
+        this->send_can_frame(0x280, data, 8, 0);
     }
 
     /**
@@ -229,7 +241,18 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
      */
     float getMultiAngle(uint8_t id)
     {
-        return multi_angle_data_[id].total_angle;
+        return multi_angle_data_[id - 1].total_angle;
+    }
+
+    /**
+     * @brief 获取电机的原始反馈角度
+     * 
+     * @param id 电机ID
+     * @return uint16_t 原始反馈角度值
+     */
+    uint16_t getRawAngle(uint8_t id)
+    {
+        return feedback_[id - 1].angle;
     }
 
     /**
@@ -240,7 +263,7 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
      */
     void setAllowAccumulate(uint8_t id, bool allow)
     {
-        multi_angle_data_[id].allow_accumulate = allow;
+        multi_angle_data_[id - 1].allow_accumulate = allow;
     }
 
     /**
@@ -251,14 +274,14 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
      */
     bool getAllowAccumulate(uint8_t id)
     {
-        return multi_angle_data_[id].allow_accumulate;
+        return multi_angle_data_[id - 1].allow_accumulate;
     }
 
-    // /**
-    //  * @brief 检查所有电机在线状态
-    //  * 
-    //  * @return uint8_t 在线状态
-    //  */
+    /**
+     * @brief 检查所有电机在线状态
+     * 
+     * @return uint8_t 在线状态
+     */
 
     BSP::WATCH_STATE::StateWatch& getStateWatch(uint8_t index)
     {
@@ -275,7 +298,6 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
         if (index >= N) {
             index = 0;
         }
-        // 修复: 使用正确的函数名GetStatus替代getStatus
         return (this->state_watch_[index].GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
     }
   protected:

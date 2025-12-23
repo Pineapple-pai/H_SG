@@ -33,7 +33,7 @@ template <uint8_t N> class MotorBase
     virtual void Parse(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData) = 0;
 
   public:
-  void send_can_frame(uint32_t can_id, const uint8_t* data, uint8_t dlc, uint32_t mailbox = CAN_TX_MAILBOX1)
+  void send_can_frame(uint32_t can_id, const uint8_t* data, uint8_t dlc, uint32_t mailbox)
     {
         auto& can_bus = HAL::CAN::get_can_bus_instance();
         HAL::CAN::Frame frame;

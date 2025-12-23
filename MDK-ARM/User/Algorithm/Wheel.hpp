@@ -28,7 +28,7 @@ public:
   float angle[4];
   void UpDate(float vx, float vy, float vw, float MaxSpeed);
 };
-
+extern bool is_deadlock_mode;
 // 外部接口
 template <class T>
 class Wheel_t

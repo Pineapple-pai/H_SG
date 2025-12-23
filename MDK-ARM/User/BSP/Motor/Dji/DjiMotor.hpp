@@ -107,8 +107,8 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
      */
     void setCAN(int16_t data, int id)
     {
-        msd[(id - 1) * 2] = data >> 8;
-        msd[(id - 1) * 2 + 1] = data << 8 >> 8;
+        msd.data[(id - 1) * 2] = data >> 8;
+        msd.data[(id - 1) * 2 + 1] = data << 8 >> 8;
     }
 
     /**
@@ -117,9 +117,16 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
      * @param han           Can句柄
      * @param pTxMailbox    邮箱
      */
-    void sendCAN(CAN_HandleTypeDef *han, uint32_t pTxMailbox)
+    void sendCAN(uint32_t pTxMailbox)
     {
-        this->send_can_frame(send_idxs_, msd, 8, pTxMailbox);
+        HAL::CAN::Frame frame;
+        frame.id = send_idxs_;
+        frame.dlc = 8;
+        memcpy(frame.data, msd.data, 8);
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can2().send(frame);
     }
     BSP::WATCH_STATE::StateWatch& getStateWatch(uint8_t index)
     {
@@ -209,8 +216,8 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
     DjiMotorfeedback feedback_[N]; // 反馈数据
     uint8_t recv_idxs_[N];         // ID索引
     uint32_t send_idxs_;
-    // CAN::BSP::send_data msd;
-    uint8_t msd[8];
+    HAL::CAN::Frame msd;
+    //uint8_t msd[8];
 
   public:
     Parameters params_; // 转国际单位参数列表

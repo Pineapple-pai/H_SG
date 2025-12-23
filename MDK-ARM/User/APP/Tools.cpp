@@ -85,7 +85,7 @@ double Tools_t::MinPosHelm(float expectations, float feedback, float *speed, flo
     double x1 = 0, x2 = 0, x3 = 0;
     double tempcin = fmod(expectations, maxpos);
     x1 = tempcin;
-    x2 = tempcin + 8191 / 2;
+    x2 = tempcin + maxpos / 2;
     x3 = feedback;
     float error = expectations - feedback;
     if (fabs(error) < DEAD_ZONE_6020) {

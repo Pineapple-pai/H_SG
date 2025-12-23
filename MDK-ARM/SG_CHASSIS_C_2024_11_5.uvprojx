@@ -313,7 +313,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>4</Optim>
+            <Optim>2</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -762,6 +762,11 @@
               <FileName>darw_dynamic.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\User\APP\UI\Dynamic\darw_dynamic.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Mode.hpp</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\User\APP\Remote\Mode.hpp</FilePath>
             </File>
           </Files>
         </Group>

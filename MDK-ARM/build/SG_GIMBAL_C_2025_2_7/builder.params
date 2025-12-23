@@ -3,7 +3,7 @@
     "target": "SG_GIMBAL_C_2025_2_7",
     "toolchain": "AC6",
     "toolchainLocation": "D:\\Keil_V5\\ARM\\ARMCLANG",
-    "toolchainCfgFile": "c:\\Users\\25444\\.vscode\\extensions\\cl.eide-3.23.2\\res\\data\\models/arm.v6.model.json",
+    "toolchainCfgFile": "f:\\Vscode temp\\cl.eide-3.26.1\\res\\data\\models/arm.v6.model.json",
     "buildMode": "fast|multhread",
     "showRepathOnLog": true,
     "threadNum": 16,
@@ -76,19 +76,70 @@
         "../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c",
         "../Middlewares/Third_Party/FreeRTOS/Source/tasks.c",
         "../Middlewares/Third_Party/FreeRTOS/Source/timers.c",
+        "User/APP/Buzzer.cpp",
+        "User/APP/CommunicationTask.cpp",
+        "User/APP/LED.cpp",
+        "User/APP/PowerMeter.cpp",
+        "User/APP/RM_UI/ui_ROT.cpp",
+        "User/APP/RM_UI/ui_default.cpp",
+        "User/APP/RM_UI/ui_interface.cpp",
+        "User/APP/Referee/RM_RefereeSystem.cpp",
+        "User/APP/Referee/RM_RefereeSystemCRC.cpp",
+        "User/APP/Remote/KeyBroad.cpp",
+        "User/APP/State.cpp",
+        "User/APP/Tools.cpp",
+        "User/APP/UI/Dynamic/darw_dynamic.cpp",
+        "User/APP/UI/Static/darw_static.cpp",
+        "User/APP/UI/UI_Init/Init.cpp",
+        "User/APP/UI/UI_Queue.cpp",
+        "User/APP/Variable.cpp",
+        "User/Algorithm/PID.cpp",
+        "User/Algorithm/Wheel.cpp",
+        "User/Algorithm/alg_slope.cpp",
+        "User/Algorithm/drv_math.cpp",
+        "User/BSP/BSP_Motor.cpp",
+        "User/BSP/Bsp_Can.cpp",
+        "User/BSP/Init.cpp",
+        "User/BSP/Power/PM01.cpp",
+        "User/BSP/Remote/Dbus.cpp",
+        "User/BSP/SuperCap/SuperCap.cpp",
+        "User/BSP/state_watch.cpp",
+        "User/HAL/ASSERT/assert.cpp",
+        "User/HAL/CAN/impl/can_bus_impl.cpp",
+        "User/HAL/CAN/impl/can_device_impl.cpp",
+        "User/HAL/CAN/interface/can_bus.cpp",
+        "User/HAL/CAN/interface/can_device.cpp",
+        "User/HAL/DWT/DWT.cpp",
+        "User/HAL/LOGGER/SEGGER/RTT/SEGGER_RTT.c",
+        "User/HAL/LOGGER/SEGGER/RTT/SEGGER_RTT_ASM_ARMv7M.S",
+        "User/HAL/LOGGER/SEGGER/RTT/SEGGER_RTT_printf.c",
+        "User/HAL/LOGGER/logger.cpp",
+        "User/HAL/UART/impl/uart_bus_impl.cpp",
+        "User/HAL/UART/impl/uart_device_impl.cpp",
+        "User/HAL/UART/interface/uart_bus.cpp",
+        "User/Task/CallBack.cpp",
+        "User/Task/ChassisTask.cpp",
+        "User/Task/CommunicationTask.cpp",
+        "User/Task/EvenTask.cpp",
+        "User/Task/PowerTask.cpp",
+        "User/Task/RefeeTask.cpp",
         "startup_stm32f407xx.s"
     ],
     "alwaysInBuildSources": [],
     "sourceParams": {},
     "options": {
         "version": 3,
+        "afterBuildTasks": [],
+        "asm-compiler": {
+            "$use": "asm-auto"
+        },
         "beforeBuildTasks": [],
-        "afterBuildTasks": [
-            {
-                "name": "axf to elf",
-                "command": "axf2elf -d \"D:\\Keil_V5\\ARM\\ARMCLANG\" -i \"${outDir}\\SG_GIMBAL_C_2025_2_7.axf\" -o \"${outDir}\\SG_GIMBAL_C_2025_2_7.elf\" > \"${outDir}\\axf2elf.log\""
-            }
-        ],
+        "c/cpp-compiler": {
+            "language-c": "c99",
+            "language-cpp": "c++17",
+            "optimization": "level-0",
+            "warnings": "ac5-like-warnings"
+        },
         "global": {
             "output-debug-info": "enable",
             "microcontroller-cpu": "cortex-m4-sp",
@@ -98,18 +149,9 @@
             "$clang-arch-extensions": "",
             "$armlink-arch-extensions": ""
         },
-        "c/cpp-compiler": {
-            "optimization": "level-0",
-            "language-c": "c99",
-            "language-cpp": "c++17",
-            "warnings": "ac5-like-warnings"
-        },
-        "asm-compiler": {
-            "$use": "asm-auto"
-        },
         "linker": {
-            "output-format": "elf",
             "misc-controls": "--diag_suppress=L6329",
+            "output-format": "elf",
             "link-scatter": [
                 "f:/H_SG/MDK-ARM/build/SG_GIMBAL_C_2025_2_7/SG_GIMBAL_C_2025_2_7.sct"
             ]
@@ -133,9 +175,10 @@
         "SYS_PathSep": ";",
         "SYS_PathSeparator": ";",
         "SYS_EOL": "\r\n",
-        "EIDE_BUILDER_DIR": "c:\\Users\\25444\\.vscode\\extensions\\cl.eide-3.23.2\\res\\tools\\win32\\unify_builder",
-        "EIDE_BINARIES_VER": "12.0.1",
+        "EIDE_BUILDER_DIR": "f:\\Vscode temp\\cl.eide-3.26.1\\res\\tools\\win32\\unify_builder",
+        "EIDE_BINARIES_VER": "12.1.1",
         "EIDE_MSYS": "C:\\Users\\25444\\.eide\\bin\\builder\\msys\\bin",
+        "EIDE_PY3_CMD": "C:\\Users\\25444\\.eide\\bin\\python36\\python3.exe",
         "ToolchainRoot": "D:\\Keil_V5\\ARM\\ARMCLANG"
     },
     "sysPaths": []

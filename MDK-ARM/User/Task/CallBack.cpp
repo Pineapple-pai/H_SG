@@ -40,7 +40,7 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
     auto& uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
     if(huart == uart3.get_handle()) {
         // 调用您的解析函数
-        BSP::Remote::dr16.Parse(huart, Size);
+	      BSP::Remote::dr16.Parse(huart, Size);
         HAL::UART::Data dbus_rx_data{dbus_rx_buffer, sizeof(dbus_rx_buffer)};
         //uart3.receive_dma_idle(dbus_rx_data);
     }

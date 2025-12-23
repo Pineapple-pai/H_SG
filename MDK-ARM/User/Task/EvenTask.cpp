@@ -25,28 +25,40 @@ void DirUpdata()
 void EventTask(void *argument)
 {
     osDelay(500);
-
     for (;;) {
+        BSP::Remote::dr16.state_watch_.UpdateTime();
+        BSP::Remote::dr16.state_watch_.CheckStatus();
+        
+        // 检查每个LK电机的状态
+        for(int i = 0; i < 4; i++) {
+            BSP::Motor::LK::Motor4005.getStateWatch(i + 1).UpdateTime();
+            BSP::Motor::LK::Motor4005.getStateWatch(i + 1).CheckStatus();
+        }
+        
+        // 检查每个DJI电机的状态
+        for(int i = 0; i < 4; i++) {
+            BSP::Motor::Dji::Motor3508.getStateWatch(i + 1).UpdateTime();
+            BSP::Motor::Dji::Motor3508.getStateWatch(i + 1).CheckStatus();
+        }
         Dir_Event.Notify();
-
         osDelay(5);
     }
 }
 bool Dir::Dir_Remote()
 {
-    bool Dir = BSP::Remote::dr16.isDrOnline();
-
-    DirData.Dr16 = Dir;
-
-    return Dir;
+	// BSP::Remote::dr16.state_watch_.UpdateTime();
+    // BSP::Remote::dr16.state_watch_.CheckStatus();
+	
+    Dir_Event.DirData.Dr16 = BSP::Remote::dr16.isDrOnline();
+    return DirData.Dr16;
 }
 
 bool Dir::Dir_String()
 {
     // 通过电机类提供的公共方法来判断是否在线（未断联）
-    bool Dir = BSP::Motor::LK::Motor4005.isMotorOnline(0x141);
+    bool Dir = BSP::Motor::LK::Motor4005.isMotorOnline(0);
     for (int i = 0; i < 4; i++) {
-        DirData.String[i] = BSP::Motor::LK::Motor4005.isMotorOnline(0x141 + i);
+        DirData.String[i] = BSP::Motor::LK::Motor4005.isMotorOnline(i);
     }
 
     return Dir;
@@ -55,10 +67,10 @@ bool Dir::Dir_String()
 bool Dir::Dir_Wheel()
 {
     // 通过电机类提供的公共方法来判断是否在线（未断联）
-    bool Dir = BSP::Motor::Dji::Motor3508.isMotorOnline(0x201);
+    bool Dir = BSP::Motor::Dji::Motor3508.isMotorOnline(0);
 
     for (int i = 0; i < 4; i++) {
-        DirData.Wheel[i] = BSP::Motor::Dji::Motor3508.isMotorOnline(0x201 + i);
+        DirData.Wheel[i] = BSP::Motor::Dji::Motor3508.isMotorOnline(i);
     }
 
     return Dir;
@@ -66,30 +78,30 @@ bool Dir::Dir_Wheel()
 
 bool Dir::Dir_MeterPower()
 {
-    bool Dir = MeterPower.isPmOnline();
+    // bool Dir = MeterPower.isPmOnline();
 
-    DirData.MeterPower = Dir;
+    // DirData.MeterPower = Dir;
 
-    return Dir;
+    // return Dir;
 }
 
 bool Dir::Dir_Communication()
 {
-    DirData.Communication = Gimbal_to_Chassis_Data.isConnectOnline();
-    if (DirData.Communication == true) {
-        Gimbal_to_Chassis_Data.Init();
-    }
+    // DirData.Communication = Gimbal_to_Chassis_Data.isConnectOnline();
+    // if (DirData.Communication == true) {
+    //     Gimbal_to_Chassis_Data.Init();
+    // }
 
-    return DirData.Communication;
+    // return DirData.Communication;
 }
 
 bool Dir::Dir_SuperCap()
 {
-    bool Dir = BSP::SuperCap::cap.isScOnline() && BSP::Power::pm01.isPmOnline();
+    // bool Dir = BSP::SuperCap::cap.isScOnline() && BSP::Power::pm01.isPmOnline();
 
-    DirData.SuperCap = Dir;
+    // DirData.SuperCap = Dir;
 
-    return Dir;
+    // return Dir;
 }
 
 bool Dir::Init_Flag()
