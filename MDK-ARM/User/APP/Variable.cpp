@@ -25,12 +25,12 @@ Kpid_t Kpid_vw(-300, 0, 0);
 PID pid_vw;
 
 // PID速度环设置
-Kpid_t Kpid_3508_vel(5, 0, 0);
+Kpid_t Kpid_3508_vel(7, 0, 0);
 PID pid_vel_Wheel[4] = {
-    {1000, 8000},
-    {1000, 8000},
-    {1000, 8000},
-    {1000, 8000},
+    {50, 2000},
+    {50, 2000},
+    {50, 2000},
+    {50, 2000},
 };
 
 // 尖括号里填底盘类型
@@ -91,9 +91,9 @@ Tools_t Tools;
 Chassis_Data_t Chassis_Data;
 
 //斜坡规划
-Class_Slope slope_vx(3.0f, 7.0f, Slope_First_REAL);  // X方向速度
-Class_Slope slope_vy(3.0f, 7.0f, Slope_First_REAL);  // Y方向速度  
-Class_Slope slope_vw(3.5f, 7.5f, Slope_First_REAL);    // 旋转速度
+Class_Slope slope_vx(7.0f, 7.0f, Slope_First_REAL);  // X方向速度
+Class_Slope slope_vy(7.0f, 7.0f, Slope_First_REAL);  // Y方向速度  
+Class_Slope slope_vw(7.5f, 7.5f, Slope_First_REAL);    // 旋转速度
 
 // PM01 pm01;
 

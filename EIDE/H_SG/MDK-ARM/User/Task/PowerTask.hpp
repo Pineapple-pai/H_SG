@@ -22,12 +22,6 @@ namespace SGPowerControl
             EffectivePower = 0.0f;
             E_lower = 0.0f;
             E_upper = 0.0f;
-            
-            for (int i = 0; i < 4; i++) {
-                Initial_Est_power[i] = 0.0f;
-                pMaxPower[i] = 0.0f;
-                Cmd_MaxT[i] = 0.0;
-            }
         }
 
         ~PowerUpData_t() {

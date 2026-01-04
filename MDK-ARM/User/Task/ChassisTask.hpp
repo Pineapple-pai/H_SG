@@ -1,7 +1,7 @@
 #pragma once
 #include "../APP/State.hpp"
 #include "../Algorithm/alg_slope.h"
-
+#include "../Algorithm/ChassisCalculation/StringWheel.hpp"
 #include "../BSP/Motor/Lk/Lk_motor.hpp"
 #include "../BSP/Motor/Dji/DjiMotor.hpp"
 /**
@@ -43,6 +43,9 @@ class Chassis_Task : public Task
     class StopHandler;
     class MoveHandler;
     Class_Slope slope_speed[4];
+
+    Alg::CalculationBase::String_IK stringIk;
+
     // 成员变量
     State m_currentState = State::UniversalState;
     std::unique_ptr<StateHandler> m_stateHandler; // 当前状态处理器

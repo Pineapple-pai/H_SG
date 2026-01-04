@@ -7,14 +7,11 @@
 #define My_PI 3.14152653529799323
 
 // 扭矩常数定义
-#define toque_const_3508 0.00036621
-#define rpm_to_rads_3508 0.0029088820f
+#define toque_const_3508 0.00036621f
+#define rpm_to_rads_3508 0.00664267f
 
-#define toque_const_6020 0.000128173828f
-#define rpm_to_rads_6020 0.104719555f
-
-#define toque_const_4005 0.00011886f
-#define rpm_to_rads_4005 0.002652584f
+#define toque_const_4005 0.000117187f
+#define rpm_to_rads_4005 0.010471966f
 
 #define pMAX 120.0f
 
@@ -59,7 +56,7 @@ namespace SGPowerControl
         }
         
         float GetSpeed(uint8_t index) const override {
-            return motor_.getVelocityRpm(index);
+            return motor_.getVelocityRads(index);
         }
         float GetMaxCurrent() const override 
         {
@@ -80,7 +77,7 @@ namespace SGPowerControl
         }
         
         float GetSpeed(uint8_t index) const override {
-            return motor_.getVelocityRpm(index);
+            return motor_.getVelocityRads(index);
         }
         float GetMaxCurrent() const override 
         {
@@ -100,7 +97,7 @@ namespace SGPowerControl
         Matrixf<2, 1> params;
 
         float MAXPower;
-        PowerUpData_t() : rls(1e-5f, 0.99999f), motor_interface_(nullptr), Init_flag(false)
+        PowerUpData_t() : rls(1e-4f, 0.9999f), motor_interface_(nullptr), Init_flag(false)
         {
             // 初始化成员变量
             k1 = k2 = k3 = k0 = 0.0f;
@@ -110,12 +107,7 @@ namespace SGPowerControl
             EffectivePower = 0.0f;
             E_lower = 0.0f;
             E_upper = 0.0f;
-            
-            for (int i = 0; i < 4; i++) {
-                Initial_Est_power[i] = 0.0f;
-                pMaxPower[i] = 0.0f;
-                Cmd_MaxT[i] = 0.0;
-            }
+
         }
 
         ~PowerUpData_t() {
@@ -166,6 +158,20 @@ namespace SGPowerControl
         void UpdateEnergy(float energy, float dt);  // 更新能量状态（使用缓冲能量）
         float GetAvailableEnergy() const;           // 获取可用能量
         float GetMaxPowerLimit() const;             // 获取当前最大功率限制
+
+        float target_full_power;
+        float target_base_power;
+
+        float cur_power;
+
+        float full_kp = 0.1;
+        float base_kp = 0.1;
+
+        float base_Max_power;
+        float full_Max_power;
+
+        // 能量环
+        void EnergyLoop();
     };
 
     class PowerTask_t
@@ -177,16 +183,16 @@ namespace SGPowerControl
         }
         void SetDefaultConfig() {
             // 轮向电机配置 (DJI 3508)
-            Wheel_PowerData.MAXPower     = 60.0f;
-            Wheel_PowerData.k1           = 1.08900523f;
-            Wheel_PowerData.k2           = 0.814881027f;
-            Wheel_PowerData.k3           = 5.0f;
+            Wheel_PowerData.MAXPower     = 40.0f;
+            Wheel_PowerData.k1           = 2.63900523;
+            Wheel_PowerData.k2           = 2.3214881027;
+            Wheel_PowerData.k3           = 4.0f;
             Wheel_PowerData.is_RLS       = true;
             Wheel_PowerData.E_upper      = 1000.0f;
             Wheel_PowerData.E_lower      = 500.0f;
 
             // 舵向电机配置 (LK 4005)
-            String_PowerData.MAXPower    = 60.0f * 0.6f;
+            String_PowerData.MAXPower    = 40.0f * 0.6f;
             String_PowerData.k1          = 0.182967603f;
             String_PowerData.k2          = 8.78055f;
             String_PowerData.k3          = 5.0f;

@@ -15,14 +15,17 @@
 #include "../BSP/Power/PM01.hpp"
 #include "../BSP/Motor/Lk/Lk_motor.hpp"
 #include "../BSP/Motor/Dji/DjiMotor.hpp"
-//#include "../Algorithm/StringWheel.hpp"
+#include "../Algorithm/ChassisCalculation/StringWheel.hpp"
 #include "../Task/CallBack.hpp"
 
 TaskManager taskManager;
+float Wheel_Azimuth[4] = {5 * My_PI / 4, 7 * My_PI / 4, 3 * My_PI / 4, My_PI / 4};
+float phase[4] = {2.90079 + 3.14159, 6.352207 + 3.14159, 1.83559 + 3.14159, 5.44465 + 3.14159};
+
 float torque_ff[4] = {0.0f};
 float pitch_deg = 0.0f;
 float pitch_rad = 0.0f;
-int16_t iqControl[4];
+int16_t iqControl[4];	
 float control_value;
 float target_angle;
 
@@ -278,7 +281,8 @@ Chassis_Task::Chassis_Task()
           Class_Slope(2, 3, Slope_First_REAL),
           Class_Slope(2, 3, Slope_First_REAL),
           Class_Slope(2, 3, Slope_First_REAL),
-          Class_Slope(2, 3, Slope_First_REAL)}
+          Class_Slope(2, 3, Slope_First_REAL)},
+          stringIk(0.22f, 0.09f, Wheel_Azimuth, phase) 
 {
     // 初始化默认状态
     updateState();
@@ -366,40 +370,45 @@ float ude_tar;
 
 // 将运动学解算相关，并对速度与角度进行过零处理
 void Chassis_Task::Wheel_UpData()
-{
+{   
     
     for (int i = 0; i < 4; ++i)
     {
         slope_speed[i].TIM_Calculate_PeriodElapsedCallback(); // 每次都更新
     }
+
+    for (int i = 0; i < 4; i++) {
+        float currentAngle = BSP::Motor::LK::Motor4005.getAddAngleRad(i+1);
+        stringIk.Set_current_steer_angles(currentAngle, i);
+    }
     // 对轮子进行运动学变换
-    Wheel.WheelType.UpDate(Chassis_Data.vx, Chassis_Data.vy, Chassis_Data.vw, 1500);
+    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 8.0f, 25.0f);
 
     // 储存最小角判断的速度
     for (int i = 0; i < 4; i++)
     {
-        Chassis_Data.tar_speed[i] = Wheel.WheelType.speed[i];
-    }
+        Chassis_Data.tar_speed[i] = stringIk.GetMotor_wheel(i);
+    }   
 
     // 储存最小角判断的角度，并将其转换为0-360度范围
     for (int i = 0; i < 4; i++)
     {
-        Chassis_Data.tar_angle[i] = Wheel.WheelType.angle[i] * 360.0f / 65535.0f; 
+        Chassis_Data.tar_angle[i] = stringIk.GetMotor_direction(i) * 57.2957795; 
     }
 
     // 调整初始角度偏移，确保角度一致
     Chassis_Data.getMinPos[0] =
-        Tools.MinPosHelm(Chassis_Data.tar_angle[0] + Chassis_angle_Init_0x141,
-                        BSP::Motor::LK::Motor4005.getAngleDeg(1), &Chassis_Data.tar_speed[0], 1000, 360);
+        Tools.MinPosHelm(Chassis_Data.tar_angle[0], BSP::Motor::LK::Motor4005.getAngleDeg(1), 
+                        &Chassis_Data.tar_speed[0], 1000, 360);
     Chassis_Data.getMinPos[1] =
-        Tools.MinPosHelm(Chassis_Data.tar_angle[1] + Chassis_angle_Init_0x142,
-                       BSP::Motor::LK::Motor4005.getAngleDeg(2), &Chassis_Data.tar_speed[1], 1000, 360);
+        Tools.MinPosHelm(Chassis_Data.tar_angle[1], BSP::Motor::LK::Motor4005.getAngleDeg(2),
+                        &Chassis_Data.tar_speed[1], 1000, 360);
     Chassis_Data.getMinPos[2] =
-        Tools.MinPosHelm(Chassis_Data.tar_angle[2] + Chassis_angle_Init_0x143,
-                        BSP::Motor::LK::Motor4005.getAngleDeg(3), &Chassis_Data.tar_speed[2], 1000, 360);
+        Tools.MinPosHelm(Chassis_Data.tar_angle[2], BSP::Motor::LK::Motor4005.getAngleDeg(3), 
+                        &Chassis_Data.tar_speed[2], 1000, 360);
     Chassis_Data.getMinPos[3] =
-        Tools.MinPosHelm(Chassis_Data.tar_angle[3] + Chassis_angle_Init_0x144,
-                        BSP::Motor::LK::Motor4005.getAngleDeg(4), &Chassis_Data.tar_speed[3], 1000, 360);
+        Tools.MinPosHelm(Chassis_Data.tar_angle[3], BSP::Motor::LK::Motor4005.getAngleDeg(4), 
+                        &Chassis_Data.tar_speed[3], 1000, 360);
 
     if (is_sin == true)
     {
@@ -425,12 +434,12 @@ void Chassis_Task::Filtering()
     // 电机一般速度反馈噪声大
     for (int i = 0; i < 4; i++)
     {
-        td_3508_speed[i].Calc(BSP::Motor::Dji::Motor3508.getVelocityRpm(i+1));
+        td_3508_speed[i].Calc(BSP::Motor::Dji::Motor3508.getVelocityRads(i+1));
     }
 }
 
 void Chassis_Task::PID_Updata()
-{
+{   
     // 舵向电机更新
     for (int i = 0; i < 4; i++)
     {
@@ -438,7 +447,7 @@ void Chassis_Task::PID_Updata()
         feed_4005[i].UpData(Chassis_Data.FF_Zero_cross[i]);
         Chassis_Data.FF_Zero_cross[i] = Tools.Round_Error(feed_4005[i].cout, feed_4005[i].target_e, 360);
 
-        pid_angle_String[i].GetPidPos(Kpid_4005_angle, Chassis_Data.Zero_cross[i], BSP::Motor::LK::Motor4005.getAngleDeg(i+1), 3000);
+        pid_angle_String[i].GetPidPos(Kpid_4005_angle, Chassis_Data.Zero_cross[i], BSP::Motor::LK::Motor4005.getAngleDeg(i+1), 5000);
         
         // 舵向电机速度环更新
         pid_vel_String[i].GetPidPos(Kpid_4005_vel, pid_angle_String[i].pid.cout, BSP::Motor::LK::Motor4005.getVelocityRpm(i+1), 500);
@@ -452,10 +461,10 @@ void Chassis_Task::PID_Updata()
     }
 }
 
-bool is_ude;
 void Chassis_Task::CAN_Setting()
 {
 		::state_num = state_num;
+        bool is_ude = true;
     // for (int i = 0; i < 4; i++)
     // {
   
@@ -467,35 +476,20 @@ void Chassis_Task::CAN_Setting()
     for (int i = 0; i < 4; i++) {
         Chassis_Data.final_3508_Out[i] = pid_vel_Wheel[i].GetCout();
     }
+
    // 功率控制部分
-//    if (Dir_Event.GetDir_String() == false)
-//    {
-//        PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
-//        PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
-//                                                      toque_const_4005, rpm_to_rads_4005);
-//         for (int i = 0; i < 4; i++) {
-//             Chassis_Data.final_4005_Out[i] = pid_vel_String[i].GetCout();
-//             control_value = Chassis_Data.final_4005_Out[i];
-//             iqControl[i] = (int16_t)control_value;
-//             BSP::Motor::LK::Motor4005.MultControl(&hcan1, iqControl);
-//         }
-//     } 
-//     else {
-//         // 不进行功率控制时，直接发送PID输出
-//         for (int i = 0; i < 4; i++) {
-//             Chassis_Data.final_4005_Out[i] = pid_vel_String[i].GetCout();
-//             control_value = Chassis_Data.final_4005_Out[i];
-//             iqControl[i] = (int16_t)control_value;
-//             BSP::Motor::LK::Motor4005.MultControl(&hcan1, iqControl);
-//         }
-//     }                                             
-   
-//    if (Dir_Event.GetDir_Wheel() == false)
-//    {
-//        PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
-//        PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
-//                                                     toque_const_3508, rpm_to_rads_3508);
-//    }
+   if (is_ude || Dir_Event.GetDir_String() == false)
+   {
+      PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
+      PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
+                                                    toque_const_4005, rpm_to_rads_4005);                                          
+   }
+   if (is_ude || Dir_Event.GetDir_Wheel() == false)
+   {
+      PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
+      PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
+                                                   toque_const_3508, rpm_to_rads_3508);
+   }
     for(int i = 0; i < 4; i++)
     {
         BSP::Motor::Dji::Motor3508.setCAN(Chassis_Data.final_3508_Out[i], (i + 1));
@@ -533,12 +527,12 @@ void Chassis_Task::CAN_Send()
 
 
 
-    Send_ms ++; 
+    Send_ms ++;         
     Send_ms %= 2;  
 
-   Tools.vofaSend(BSP::Motor::LK::Motor4005.getAngleDeg(1), BSP::Motor::LK::Motor4005.getAngleDeg(2),
-                    BSP::Motor::LK::Motor4005.getAngleDeg(3), BSP::Motor::LK::Motor4005.getAngleDeg(4), 
-                    Chassis_Data.tar_speed[1], BSP::Motor::Dji::Motor3508.getVelocityRpm(2) );
+//    Tools.vofaSend(BSP::Motor::Dji::Motor3508.getVelocityRpm(1), BSP::Motor::Dji::Motor3508.getVelocityRpm(2),
+//                    BSP::Motor::Dji::Motor3508.getVelocityRads(3), BSP::Motor::Dji::Motor3508.getVelocityRads(4), 
+//                    0, 0);
 }   
 
 

@@ -36,7 +36,7 @@ struct Parameters
         encoder_to_deg = 360.0 / encoder_resolution;
         rpm_to_radps = 1 / reduction_ratio / 60 * 2 * PI;
         encoder_to_rpm = 1 / reduction_ratio;
-        current_to_torque_coefficient = reduction_ratio * torque_constant / feedback_current_max * current_max;
+        current_to_torque_coefficient = torque_constant / feedback_current_max * current_max;
         feedback_to_current_coefficient = current_max / feedback_current_max;
         deg_to_real = 1 / reduction_ratio;
     }
@@ -265,11 +265,11 @@ template <uint8_t N> class GM3508 : public DjiMotorBase<N>
     GM3508(uint16_t Init_id, const uint8_t (&recv_idxs)[N], uint32_t send_idxs)
         : DjiMotorBase<N>(Init_id, recv_idxs, send_idxs,
                           // 直接构造参数对象
-                          Parameters(1.0, 0.3 / 1.0, 16384, 20, 8192))
+                          Parameters(1.0, 0.3, 16384, 20, 8192))
     {
     }
 };
-
+    
 /**
  * @brief 配置6020电机的参数
  *

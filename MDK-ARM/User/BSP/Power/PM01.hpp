@@ -44,7 +44,10 @@ namespace BSP::Power
         uint8_t send_cnt; // 发送次数用于调节发送，定时发送输入功率
         CAN_TxHeaderTypeDef TxHeader;
         uint8_t SendData[8];
-        
+        float pm_voltage;           // 功率计电压
+        float pm_current;           // 功率计电流
+        float pm_power;             // 功率计功率
+
         // 添加状态监视器
         BSP::WATCH_STATE::StateWatch state_watch_{100}; // 100ms超时
         
@@ -63,8 +66,9 @@ namespace BSP::Power
         // 初始化
         void PM01Init();
 		bool isPmOnline();
+        void pm_Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t *RxData);
     };
-
+    static void PM01_Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t *RxData);
     static float pm01_chao;
     inline void RM_PM01::PM01Init()
     {
@@ -193,6 +197,7 @@ namespace BSP::Power
         return (state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
 	}
     inline RM_PM01 pm01;
+
     static void PM01ParseDate(const HAL::CAN::Frame& frame)
     {
         CAN_RxHeaderTypeDef rx_header;
@@ -203,6 +208,20 @@ namespace BSP::Power
         rx_header.DLC = frame.dlc;
         
         pm01.PM01Parse(rx_header, const_cast<uint8_t*>(frame.data));
+        if (rx_header.StdId == 0x212) {
+            PM01_Parse(rx_header, const_cast<uint8_t*>(frame.data));
+        }        
+
     }
+    static void PM01_Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t *RxData)
+    {
+        if (RxHeader.StdId == 0x212)
+        {
+            pm01.pm_voltage = (float)(int32_t)((RxData[1] << 8) | RxData[0]) / 100.0f;
+            pm01.pm_current = (float)(int32_t)((RxData[3] << 8) | RxData[2]) / 100.0f;
+            pm01.pm_power = pm01.pm_voltage * pm01.pm_current;
+        }
+    }
+
 
 } // namespace BSP::Power

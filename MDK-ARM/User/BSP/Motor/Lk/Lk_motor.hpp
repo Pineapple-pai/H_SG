@@ -35,7 +35,7 @@ struct Parameters
         encoder_to_deg = 360.0 / encoder_resolution;
         rpm_to_radps = 1 / reduction_ratio / 60 * 2 * PI;
         encoder_to_rpm = 1 / reduction_ratio;
-        current_to_torque_coefficient = reduction_ratio * torque_constant / feedback_current_max * current_max;
+        current_to_torque_coefficient = torque_constant / feedback_current_max * current_max;
         feedback_to_current_coefficient = current_max / feedback_current_max;
         deg_to_real = 1 / reduction_ratio;
     }
@@ -400,8 +400,8 @@ template <uint8_t N> class LK4005 : public LkMotorBase<N>
         : LkMotorBase<N>(Init_id, recv_idxs, send_idxs,
                          Parameters(10.0,  // 减速比
                                    0.06,   // 扭矩常数 (根据实际电机调整)
-                                   4096,  // 最大反馈电流
-                                   2.7,   // 最大电流 
+                                   2048,  // 最大反馈电流
+                                   4,   // 最大电流 
                                    65536.0)) // 编码器分辨率
     {
     }

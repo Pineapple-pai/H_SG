@@ -21,6 +21,7 @@ void Init()
 	auto& can1 = HAL::CAN::get_can_bus_instance().get_can1();
     auto& can2 = HAL::CAN::get_can_bus_instance().get_can2();
 	BSP::Motor::Dji::Motor3508.registerCallback(&can2);
+    
     for(uint8_t i = 0; i < 4; i++)
     {
         BSP::Motor::LK::Motor4005.setAllowAccumulate(i + 1, true);
@@ -44,6 +45,12 @@ void Init()
     //         BSP::SuperCap::cap.Parse(frame);
     //     }
     // });
+    can1.register_rx_callback([](const HAL::CAN::Frame &frame)
+    {
+
+        BSP::Power::PM01ParseDate(frame);
+
+    });
     
 	HAL_TIM_Base_Start_IT(&htim7);
     // 开启定时器
