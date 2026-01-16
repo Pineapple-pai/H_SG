@@ -14,22 +14,29 @@ uint8_t referee_rx_buffer[18];
 
 extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-    HAL::CAN::Frame rx_frame;
+    HAL::CAN::Frame rx_frame1;
     auto &can1 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can1);
 
     if (hcan == can1.get_handle())
     {
-        can1.receive(rx_frame);  // receive()内部会自动触发所有注册的回调
+        can1.receive(rx_frame1);  // receive()内部会自动触发所有注册的回调
+        BSP::Motor::LK::Motor4005.Parse(rx_frame1);
+        BSP::Motor::Dji::Motor3508.Parse(rx_frame1);
+        
     }
 }
 extern "C" void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-    HAL::CAN::Frame rx_frame;
+    HAL::CAN::Frame rx_frame2;
     auto &can2 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can2);
 
     if (hcan == can2.get_handle())
     {
-        can2.receive(rx_frame);  // receive()内部会自动触发所有注册的回调
+        can2.receive(rx_frame2);  // receive()内部会自动触发所有注册的回调
+        
+		//BSP::Motor::LK::Motor4005.Parse(rx_frame2);	
+        Gimbal_to_Chassis_Data.HandleCANMessage(rx_frame2.id, rx_frame2.data);
+     
     }
 }
 

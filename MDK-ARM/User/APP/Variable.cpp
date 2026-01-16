@@ -21,8 +21,8 @@ Kpid_t ude_Kpid_vel(0, 0, 0);
 PID ude_vel_demo;
 
 //底盘跟随环
-Kpid_t Kpid_vw(-300, 0, 0);
-PID pid_vw;
+Kpid_t Kpid_vw(-500, 0, 0);
+PID pid_vw(0.0, 0.0);
 
 // PID速度环设置
 Kpid_t Kpid_3508_vel(7, 0, 0);

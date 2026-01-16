@@ -4,24 +4,25 @@
 
 bool LED::Update(void)
 {
-Dir *dir = static_cast<Dir *>(sub);
+    Dir *dir = static_cast<Dir *>(sub);
 
+    // 优先级1：舵向电机掉线 - 红色
     if (dir->isAnyStringOffline()) {
-        uint32_t aRGB = RED;
-        aRGB_led_show(aRGB);
+        aRGB_led_show(RED);
         return false;
     } 
+    // 优先级2：轮向电机掉线 - 蓝色
     else if (dir->isAnyWheelOffline()) {
-        uint32_t aRGB = BLUE;
-        aRGB_led_show(aRGB);
+        aRGB_led_show(BLUE);
         return false;
     } 
-    // if (dir->getDir_Communication())
-    // {
-    //     uint32_t aRGB = PINK;
-    //     aRGB_led_show(aRGB);
-    //     return false;
-    // }
+    // 优先级3：板间通信掉线 - 粉色
+    else if (!dir->getDir_Communication())
+    {
+        aRGB_led_show(PINK);
+        return false;
+    }
+    // 所有设备在线 - 正常流水灯
     else
     {
         Normal_State();

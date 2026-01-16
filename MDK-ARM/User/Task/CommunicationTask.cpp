@@ -21,7 +21,7 @@ void CommunicationTask(void *argument)
     for (;;)
     {
         Gimbal_to_Chassis_Data.Transmit();
-        osDelay(5);
+        osDelay(20);
     }
 }
 Communicat::Gimbal_to_Chassis Gimbal_to_Chassis_Data;
@@ -32,7 +32,6 @@ void Gimbal_to_Chassis::Init()
 {
     frame1_received = false;
     frame2_received = false;
-    frame3_received = false;
     last_frame_time = HAL_GetTick();
 }
 void Gimbal_to_Chassis::HandleCANMessage(uint32_t std_id, uint8_t* data)
@@ -43,14 +42,13 @@ void Gimbal_to_Chassis::HandleCANMessage(uint32_t std_id, uint8_t* data)
 void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
 {
     uint32_t current_time = HAL_GetTick();
-    uint32_t last_frame_time = HAL_GetTick();
+    
     // 检查超时，如果超时则重置接收状态
-    if (current_time - last_frame_time > FRAME_TIMEOUT) {
-        frame1_received = false;
-        frame2_received = false;
-        frame3_received = false;
-    }
-    last_frame_time = current_time;
+    // if (current_time - last_frame_time > FRAME_TIMEOUT) {
+    //     frame1_received = false;
+    //     frame2_received = false;
+    // }
+    // this->last_frame_time = current_time;
 
     switch(std_id) {
         case CAN_G2C_FRAME1_ID:
@@ -61,16 +59,12 @@ void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
             std::memcpy(can_rx_buffer + 8, data, 8);
             frame2_received = true;
             break;
-        case CAN_G2C_FRAME3_ID:
-            std::memcpy(can_rx_buffer + 16, data, 7); // 第三帧只拷贝6字节
-            frame3_received = true;
-            break;
         default:
             return;
     }
 
     // 如果三帧都接收完成，处理数据
-    if (frame1_received && frame2_received && frame3_received) {
+    if (frame1_received || frame2_received) {
         ProcessReceivedData();
 
         state_watch_.UpdateLastTime();
@@ -79,13 +73,12 @@ void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
         // 重置接收状态
         frame1_received = false;
         frame2_received = false;
-        frame3_received = false;
     }
 }
 void Gimbal_to_Chassis::ProcessReceivedData()
 {
     const uint8_t EXPECTED_HEAD = 0xA5; // 根据发送端设置的头字节
-    const uint8_t EXPECTED_LEN = 1 + sizeof(Direction) + sizeof(ChassisMode) + sizeof(UiList) + sizeof(IMU);
+    const uint8_t EXPECTED_LEN = 1 + sizeof(Direction) + sizeof(ChassisMode) + sizeof(UiList);
 
     if (can_rx_buffer[0] != EXPECTED_HEAD) {
         return;
@@ -100,9 +93,6 @@ void Gimbal_to_Chassis::ProcessReceivedData()
 
     std::memcpy(&ui_list, ptr, sizeof(ui_list));
     ptr += sizeof(ui_list);
-		
-	std::memcpy(&imu, ptr, sizeof(imu));
-    ptr += sizeof(imu);
 }
 
 void Gimbal_to_Chassis::SlidingWindowRecovery()
@@ -164,9 +154,11 @@ void Gimbal_to_Chassis::Transmit()
     frame.dlc = 8;
     frame.is_extended_id = false;
     frame.is_remote_frame = false;
-    frame.id = CAN_C2G_FRAME1_ID;
+    frame.id = CAN_CHASSIS_TO_GIMBAL_ID;  // 0x501
     std::memcpy(frame.data, tx_data, 8);
-    HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can2).send(frame);
+
+    auto& can2 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can2);
+    can2.send(frame);
 
 }
 

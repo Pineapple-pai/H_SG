@@ -1,9 +1,13 @@
+#ifndef Lk_Motor_hpp
+#define Lk_Motor_hpp
 #pragma once
 
 #include "../BSP/Motor/MotorBase.hpp"
 #include "../HAL/CAN/can_hal.hpp"
-#include "../BSP/state_watch.hpp"
-#define PI 3.14159265358979323846
+
+static double deg_to_rad = 0.017453292519611;
+static double rad_to_deg = 1 / 0.017453292519611;
+
 namespace BSP::Motor::LK
 {
 
@@ -24,14 +28,13 @@ struct Parameters
     double feedback_to_current_coefficient; // 反馈电流转电流系数
     double deg_to_real;                     // 角度转实际角度系数
 
-    static constexpr double deg_to_rad = 0.017453292519611;
-    static constexpr double rad_to_deg = 1 / 0.017453292519611;
+
 
     // 构造函数带参数计算
     Parameters(double rr, double tc, double fmc, double mc, double er)
-        : reduction_ratio(rr), torque_constant(tc), feedback_current_max(fmc), current_max(mc), encoder_resolution(er)
+        : reduction_ratio(rr), torque_constant(tc), feedback_current_max(fmc), 
+          current_max(mc), encoder_resolution(er)
     {
-
         encoder_to_deg = 360.0 / encoder_resolution;
         rpm_to_radps = 1 / reduction_ratio / 60 * 2 * PI;
         encoder_to_rpm = 1 / reduction_ratio;
@@ -43,27 +46,37 @@ struct Parameters
 
 /**
  * @brief LK电机基类
- * 
- * @tparam N 电机总数
  */
 template <uint8_t N> class LkMotorBase : public MotorBase<N>
 {
-  protected:
+protected:
+    struct LkMotorFeedback
+    {
+        uint8_t cmd;
+        uint8_t temperature;
+        int16_t current;
+        int16_t velocity;
+        uint16_t angle;
+    };
+
+    struct MultiAngleData
+    {
+        double total_angle;
+        double last_angle;
+        bool allow_accumulate;
+        bool is_initialized;
+    };
+
     /**
-     * @brief Construct a new Lk Motor Base object
-     * 
-     * @param Init_id CAN初始ID
-     * @param recv_idxs 接收ID索引数组
-     * @param send_idxs 发送ID
-     * @param params 电机参数
+     * @brief 构造函数
      */
-    LkMotorBase(uint16_t Init_id, const uint8_t (&recv_idxs)[N], const uint32_t (&send_idxs)[N], Parameters params)
-        :init_address(Init_id), params_(params)
+    LkMotorBase(uint16_t Init_id, const uint8_t (&recv_ids)[N], const uint32_t (&send_ids)[N], Parameters params)
+        : init_address(Init_id), params_(params)
     {
         for (uint8_t i = 0; i < N; ++i)
         {
-            recv_idxs_[i] = recv_idxs[i];
-            send_idxs_[i] = send_idxs[i];
+            recv_idxs_[i] = recv_ids[i];
+            send_idxs_[i] = send_ids[i];
         }
 
         // 初始化电机数据
@@ -76,273 +89,22 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
         }
     }
 
-  public:
-    /**
-     * @brief 解析CAN数据
-     * 
-     * @param RxHeader 接收数据的句柄
-     * @param pData 接收数据的缓冲区
-     */
-    void Parse(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData)
-    {
-        const uint16_t received_id = HAL::CAN::ICanDevice::extract_id(RxHeader);
-
-        for (uint8_t i = 0; i < N; ++i)
-        {
-            if (received_id == init_address + recv_idxs_[i])
-            {
-                memcpy(&feedback_[i], pData, sizeof(LkMotorFeedback));
-
-                // 转换字节序
-                feedback_[i].cmd = pData[0];
-                feedback_[i].temperature = pData[1];               
-                feedback_[i].current = (int16_t)((pData[3] << 8) | pData[2]);
-                feedback_[i].velocity = (int16_t)((pData[5] << 8) | pData[4]);
-                feedback_[i].angle = (uint16_t)((pData[7] << 8) | pData[6]);
-
-                // 调用Configure处理数据
-                Configure(i, feedback_[i]);
-                this->state_watch_[i].UpdateLastTime();
-                this->state_watch_[i].UpdateTime();
-                this->state_watch_[i].CheckStatus();
-            }
-        }
-    }
-
-        /**
-     * @brief 设置发送数据
-     * 
-     * @param data 数据发送的数据
-     * @param id 电机ID
-     */
-    void setCAN(int16_t data, int id)
-    {
-        // LK电机发送格式与DJI不同，需要根据具体命令调整
-        // 这里先使用类似DJI的格式
-        msd[(id - 1) * 2] = data >> 8;
-        msd[(id - 1) * 2 + 1] = data << 8 >> 8;
-    }
-
-    /**
-     * @brief 发送Can数据
-     * 
-     * @param han Can句柄
-     * @param pTxMailbox 邮箱
-     */
-    void sendCAN(CAN_HandleTypeDef *han, uint8_t id, uint8_t pTxMailbox)
-    {
-        this->send_can_frame(send_idxs_[id - 1], msd, 8, pTxMailbox);
-    }
-    /**
-     * @brief 使能电机
-     * 
-     * @param hcan CAN句柄
-     */
-    void ON(CAN_HandleTypeDef *hcan, uint8_t id)
-    {
-        uint8_t data[8] = {0x88};
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
-    }
-
-    /**
-     * @brief 失能电机
-     * 
-     * @param hcan CAN句柄
-     */
-    void OFF(CAN_HandleTypeDef *hcan, uint8_t id)
-    {
-        uint8_t data[8] = {0x81};
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
-    }
-
-    /**
-     * @brief 清除错误
-     * 
-     * @param hcan CAN句柄
-     */
-    void clear_err(CAN_HandleTypeDef *hcan, uint8_t id)
-    {
-        uint8_t data[8] = {0x9B};
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
-    }
-
-    /**
-     * @brief 位置控制
-     * 
-     * @param hcan CAN句柄
-     * @param angle 目标角度（度）
-     * @param speed 速度限制（RPM）
-     * @param id 电机ID
-     */
-    void SetPositionCtrl(CAN_HandleTypeDef *hcan, uint8_t id, int32_t angle, uint16_t speed)
-    {
-        uint8_t data[8];
-        uint32_t encoder_value = angle * 100; // 根据实际转换关系调整
-        
-        data[0] = 0xA4;
-        data[1] = 0x00;
-        data[2] = speed & 0xFF;
-        data[3] = (speed >> 8) & 0xFF;
-        data[4] = encoder_value & 0xFF;
-        data[5] = (encoder_value >> 8) & 0xFF;
-        data[6] = (encoder_value >> 16) & 0xFF;
-        data[7] = (encoder_value >> 24) & 0xFF;
-
-        this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
-    }
-
-    /**
-     * @brief 扭矩控制
-     * 
-     * @param hcan CAN句柄
-     * @param torque 目标扭矩
-     * @param id 电机ID
-     */
-    void SetTorqueCtrl(CAN_HandleTypeDef *hcan, uint8_t id, int16_t torque)
-    {
-        if (torque > 2048) torque = 2048;
-        if (torque < -2048) torque = -2048;
-        uint8_t data[8];
-        
-        data[0] = 0xA1;
-        data[1] = 0x00;
-        data[2] = 0x00;
-        data[3] = 0x00;
-        data[4] = torque & 0xFF;
-        data[5] = (torque >> 8) & 0xFF;
-        data[6] = 0x00;
-        data[7] = 0x00;
-
-       this->send_can_frame(init_address + send_idxs_[id - 1], data, 8, 0);
-    }
-
-    /**
-     * @brief 多电机控制
-     * 
-     * @param hcan CAN句柄
-     * @param iqControl 4个电机的转矩电流控制值数组
-     */
-    void MultControl(CAN_HandleTypeDef *hcan, const int16_t iqControl[4])
-    {
-        uint8_t data[8];
-       
-        for (int i = 0; i < 4; ++i) {
-        data[i * 2] = iqControl[i] & 0xFF;           
-        data[i * 2 + 1] = (iqControl[i] >> 8) & 0xFF; 
-    }
-        this->send_can_frame(0x280, data, 8, 0);
-    }
-
-    /**
-     * @brief 获取多圈角度
-     * 
-     * @param id 电机ID
-     * @return float 多圈角度（度）
-     */
-    float getMultiAngle(uint8_t id)
-    {
-        return multi_angle_data_[id - 1].total_angle;
-    }
-
-    /**
-     * @brief 获取电机的原始反馈角度
-     * 
-     * @param id 电机ID
-     * @return uint16_t 原始反馈角度值
-     */
-    uint16_t getRawAngle(uint8_t id)
-    {
-        return feedback_[id - 1].angle;
-    }
-
-    /**
-     * @brief 设置是否允许累计多圈角度
-     * 
-     * @param id 电机ID
-     * @param allow 是否允许
-     */
-    void setAllowAccumulate(uint8_t id, bool allow)
-    {
-        multi_angle_data_[id - 1].allow_accumulate = allow;
-    }
-
-    /**
-     * @brief 获取是否允许累计多圈角度
-     * 
-     * @param id 电机ID
-     * @return bool 是否允许
-     */
-    bool getAllowAccumulate(uint8_t id)
-    {
-        return multi_angle_data_[id - 1].allow_accumulate;
-    }
-
-    /**
-     * @brief 检查所有电机在线状态
-     * 
-     * @return uint8_t 在线状态
-     */
-
-    BSP::WATCH_STATE::StateWatch& getStateWatch(uint8_t index)
-    {
-        if (index >= N) {
-            // 处理越界情况
-            index = 0;
-        }
-        return this->state_watch_[index];
-    }
-    
-    // 添加获取电机状态的方法
-    bool isMotorOnline(uint8_t index)
-    {
-        if (index >= N) {
-            index = 0;
-        }
-        return (this->state_watch_[index].GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
-    }
-  protected:
-    struct MultiAngleData
-    {
-        double total_angle;
-        double last_angle;
-        bool allow_accumulate;
-        bool is_initialized;
-    };
-        struct LkMotorFeedback
-    {
-        uint8_t cmd;
-        uint8_t temperature;
-        int16_t current;
-        int16_t velocity;
-        uint16_t angle;
-    };
-
+private:
     /**
      * @brief 将反馈数据转换为国际单位
-     * 
-     * @param i 电机索引
-     * @param feedback 反馈数据
      */
     void Configure(size_t i, const LkMotorFeedback& feedback)
     {
         const auto &params = params_;
 
         this->unit_data_[i].angle_Deg = feedback.angle * params.encoder_to_deg;
-
-        this->unit_data_[i].angle_Rad = this->unit_data_[i].angle_Deg * params.deg_to_rad;
-
+        this->unit_data_[i].angle_Rad = this->unit_data_[i].angle_Deg * params.deg_to_real;
         this->unit_data_[i].velocity_Rad = feedback.velocity * params.rpm_to_radps;
-
         this->unit_data_[i].velocity_Rpm = feedback.velocity * params.encoder_to_rpm;
-
         this->unit_data_[i].current_A = feedback.current * params.feedback_to_current_coefficient;
-
         this->unit_data_[i].torque_Nm = feedback.current * params.current_to_torque_coefficient;
-
         this->unit_data_[i].temperature_C = feedback.temperature;
 
-        double lastData = this->unit_data_[i].last_angle;
-        double Data = this->unit_data_[i].angle_Deg;
         // 多圈角度计算
         if (multi_angle_data_[i].allow_accumulate) 
         {
@@ -369,48 +131,226 @@ template <uint8_t N> class LkMotorBase : public MotorBase<N>
         this->unit_data_[i].last_angle = this->unit_data_[i].angle_Deg;
     }
 
-  private:
-    HAL::CAN::CanDeviceId can_device_id_;
-    const uint16_t init_address;    // 初始地址
-    LkMotorFeedback feedback_[N]; // 反馈数据
-    uint8_t recv_idxs_[N];          //接收id
-    uint32_t send_idxs_[N];            // 发送id
+public:
+    /**
+     * @brief 解析CAN数据
+     */
+    void Parse(const HAL::CAN::Frame &frame) override
+    {
+        for (uint8_t i = 0; i < N; ++i)
+        {
+            if (frame.id == init_address + recv_idxs_[i])
+            {
+                const uint8_t* pData = frame.data;
+                
+                feedback_[i].cmd = pData[0];
+                feedback_[i].temperature = pData[1];               
+                feedback_[i].current = (int16_t)((pData[3] << 8) | pData[2]);
+                feedback_[i].velocity = (int16_t)((pData[5] << 8) | pData[4]);
+                feedback_[i].angle = (uint16_t)((pData[7] << 8) | pData[6]);
+
+                Configure(i, feedback_[i]);
+                // 更新时间戳用于断联检测
+                this->state_watch_[i].UpdateLastTime();
+            }
+        }
+    }
+
+    /**
+     * @brief 使能LK电机
+     */
+    void On(uint8_t id)
+    {
+        uint8_t send_data[8] = {0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        
+        HAL::CAN::Frame frame;
+        frame.id = init_address + send_idxs_[id - 1];
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief 失能LK电机
+     */
+    void Off(uint8_t id)
+    {
+        uint8_t send_data[8] = {0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        
+        HAL::CAN::Frame frame;
+        frame.id = init_address + send_idxs_[id - 1];
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief 清除LK电机错误
+     */
+    void ClearErr(uint8_t id)
+    {
+        uint8_t send_data[8] = {0x9B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        
+        HAL::CAN::Frame frame;
+        frame.id = init_address + send_idxs_[id - 1];
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief LK电机扭矩控制
+     */
+    void ctrl_Torque(uint8_t id, int16_t torque)
+    {
+        if (torque > 2048) torque = 2048;
+        if (torque < -2048) torque = -2048;
+        
+        uint8_t send_data[8];
+        send_data[0] = 0xA1;
+        send_data[1] = 0x00;
+        send_data[2] = 0x00;
+        send_data[3] = 0x00;
+        send_data[4] = torque & 0xFF;
+        send_data[5] = (torque >> 8) & 0xFF;
+        send_data[6] = 0x00;
+        send_data[7] = 0x00;
+
+        HAL::CAN::Frame frame;
+        frame.id = init_address + send_idxs_[id - 1];
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief LK电机位置速度控制
+     */
+    void ctrl_Position(uint8_t id, int32_t angle, uint16_t speed)
+    {
+        uint32_t encoder_value = angle * 100;
+        
+        uint8_t send_data[8];
+        send_data[0] = 0xA4;
+        send_data[1] = 0x00;
+        send_data[2] = speed & 0xFF;
+        send_data[3] = (speed >> 8) & 0xFF;
+        send_data[4] = encoder_value & 0xFF;
+        send_data[5] = (encoder_value >> 8) & 0xFF;
+        send_data[6] = (encoder_value >> 16) & 0xFF;
+        send_data[7] = (encoder_value >> 24) & 0xFF;
+
+        HAL::CAN::Frame frame;
+        frame.id = init_address + send_idxs_[id - 1];
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief LK电机多电机控制（广播模式）
+     */
+    void ctrl_Multi(const int16_t iqControl[4])
+    {
+        auto& can1 = HAL::CAN::get_can_bus_instance().get_can1();
+        if (HAL_CAN_GetTxMailboxesFreeLevel(can1.get_handle()) == 0)
+        {
+            return;  // 邮箱满，跳过本次发送
+        }
+        uint8_t send_data[8];
+        for (int i = 0; i < 4; ++i) 
+        {
+            send_data[i * 2] = iqControl[i] & 0xFF;           
+            send_data[i * 2 + 1] = (iqControl[i] >> 8) & 0xFF; 
+        }
+
+        HAL::CAN::Frame frame;
+        frame.id = 0x280;
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief 获取多圈角度
+     */
+    float getMultiAngle(uint8_t id)
+    {
+        return multi_angle_data_[id - 1].total_angle;
+    }
+
+    /**
+     * @brief 获取电机的原始反馈角度
+     */
+    uint16_t getRawAngle(uint8_t id)
+    {
+        return feedback_[id - 1].angle;
+    }
+
+    /**
+     * @brief 设置是否允许累计多圈角度
+     */
+    void setAllowAccumulate(uint8_t id, bool allow)
+    {
+        multi_angle_data_[id - 1].allow_accumulate = allow;
+    }
+
+    /**
+     * @brief 获取是否允许累计多圈角度
+     */
+    bool getAllowAccumulate(uint8_t id)
+    {
+        return multi_angle_data_[id - 1].allow_accumulate;
+    }
+
+protected:
+    const uint16_t init_address;
+    uint8_t recv_idxs_[N];
+    uint32_t send_idxs_[N];
+    LkMotorFeedback feedback_[N];
     Parameters params_;
     MultiAngleData multi_angle_data_[N];
-    uint8_t msd[8];
-
-
 };
 
 /**
- * @brief LK电机具体型号配置
- * 
- * @tparam N 电机数量
+ * @brief LK4005电机类
  */
 template <uint8_t N> class LK4005 : public LkMotorBase<N>
 {
-  public:
-    /**
-     * @brief 配置4005电机的参数
-     * 
-     * @param Init_id 初始ID
-     * @param recv_idxs 接收ID索引数组
-     */
-    LK4005(uint16_t Init_id, const uint8_t (&recv_idxs)[N], const uint32_t (&send_idxs)[N])
-        : LkMotorBase<N>(Init_id, recv_idxs, send_idxs,
-                         Parameters(10.0,  // 减速比
-                                   0.06,   // 扭矩常数 (根据实际电机调整)
-                                   2048,  // 最大反馈电流
-                                   4,   // 最大电流 
+public:
+    LK4005(uint16_t Init_id, const uint8_t (&ids)[N], const uint32_t (&send_idxs)[N])
+        : LkMotorBase<N>(Init_id, ids, send_idxs,
+                         Parameters(10.0,   // 减速比
+                                   0.06,    // 扭矩常数
+                                   2048,    // 最大反馈电流
+                                   4,       // 最大电流 
                                    65536.0)) // 编码器分辨率
-    {
-    }
+    {}
 };
+
 /**
  * @brief 电机实例
- * 模板内的参数为电机的总数量，这里为假设有两个电机
- * 构造函数的第一个参数为初始ID，第二个参数为电机ID列表,第三个参数是发送的ID
- *
  */
-inline LK4005<4> Motor4005(0x140, {1, 2, 3, 4}, {1, 2, 3, 4});
+inline LK4005<4> Motor4005{0x140, {1, 2, 3, 4}, {1, 2, 3, 4}};
+
 } // namespace BSP::Motor::LK
+
+#endif

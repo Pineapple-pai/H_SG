@@ -155,17 +155,17 @@ class LH_Cap
     void sendCAN(CAN_HandleTypeDef *han, uint32_t pTxMailbox)
     {
         // 发送
-        auto& can_bus = HAL::CAN::get_can_bus_instance();
-        auto& can_device = can_bus.get_device(HAL::CAN::CanDeviceId::HAL_Can2);
+        // auto& can_bus = HAL::CAN::get_can_bus_instance();
+        // auto& can_device = can_bus.get_device(HAL::CAN::CanDeviceId::HAL_Can2);
 
-        HAL::CAN::Frame frame;
-        frame.id = sendID;
-        frame.dlc = 8;
-        frame.is_extended_id = false;
-        frame.is_remote_frame = false;
-        std::memcpy(frame.data, send_data, 8);
+        // HAL::CAN::Frame frame;
+        // frame.id = sendID;
+        // frame.dlc = 8;
+        // frame.is_extended_id = false;
+        // frame.is_remote_frame = false;
+        // std::memcpy(frame.data, send_data, 8);
 
-        can_device.send(frame);
+        // can_device.send(frame);
     }
 	
 	bool isScOnline()

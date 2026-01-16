@@ -39,7 +39,7 @@ void ChassisTask(void *argument)
     for (;;)
     {   
         taskManager.updateAll();
-        osDelay(5);
+        osDelay(1);
     }
 }
 float k = 0.0f;
@@ -96,7 +96,7 @@ class Chassis_Task::FollowHandler : public StateHandler
         auto cos_theta = cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         auto sin_theta = sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         
-        pid_vw.GetPidPos(Kpid_vw, 0, Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
+        pid_vw.GetPidPos(Kpid_vw, 0, -Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
         float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
         float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
         float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
@@ -382,7 +382,7 @@ void Chassis_Task::Wheel_UpData()
         stringIk.Set_current_steer_angles(currentAngle, i);
     }
     // 对轮子进行运动学变换
-    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 8.0f, 25.0f);
+    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 5.0f, 10.0f);
 
     // 储存最小角判断的速度
     for (int i = 0; i < 4; i++)
@@ -478,18 +478,18 @@ void Chassis_Task::CAN_Setting()
     }
 
    // 功率控制部分
-   if (is_ude || Dir_Event.GetDir_String() == false)
-   {
-      PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
-      PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
-                                                    toque_const_4005, rpm_to_rads_4005);                                          
-   }
-   if (is_ude || Dir_Event.GetDir_Wheel() == false)
-   {
-      PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
-      PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
-                                                   toque_const_3508, rpm_to_rads_3508);
-   }
+//    if (is_ude || Dir_Event.GetDir_String() == false)
+//    {
+//       PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
+//       PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
+//                                                     toque_const_4005, rpm_to_rads_4005);                                          
+//    }
+//    if (is_ude || Dir_Event.GetDir_Wheel() == false)
+//    {
+//       PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
+//       PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
+//                                                    toque_const_3508, rpm_to_rads_3508);
+//    }
     for(int i = 0; i < 4; i++)
     {
         BSP::Motor::Dji::Motor3508.setCAN(Chassis_Data.final_3508_Out[i], (i + 1));
@@ -501,31 +501,29 @@ void Chassis_Task::CAN_Send()
 {   
 
     // 发送数据
-    if(BSP::Remote::dr16.isDrOnline() == false)
-    {
-        for(int i = 0; i < 4; i++)
-        {
-            BSP::Motor::Dji::Motor3508.setCAN(0, (i + 1));
-            BSP::Motor::LK::Motor4005.MultControl(&hcan1, iqControl);
-        }
+    // if(BSP::Remote::dr16.isDrOnline() == false)
+    // {
+    //     for(int i = 0; i < 4; i++)
+    //     {
+    //         BSP::Motor::Dji::Motor3508.setCAN(0, (i + 1));
+    //         BSP::Motor::LK::Motor4005.ctrl_Multi(iqControl);
+    //     }
 
-    }
-    else
+    // }
+
+    if (Send_ms == 1)
     {
         for (int i = 0; i < 4; i++)
         {
             Chassis_Data.final_4005_Out[i] = pid_vel_String[i].GetCout();
-            control_value = Chassis_Data.final_4005_Out[i];
-            iqControl[i] = (int16_t)control_value;
-            BSP::Motor::LK::Motor4005.MultControl(&hcan1, iqControl);
+            iqControl[i] = (int16_t)Chassis_Data.final_4005_Out[i];
         }
+        BSP::Motor::LK::Motor4005.ctrl_Multi(iqControl);
     }
     if (Send_ms == 0)
     {
-        BSP::Motor::Dji::Motor3508.sendCAN(CAN_TX_MAILBOX0);
+        BSP::Motor::Dji::Motor3508.sendCAN();
     }
-
-
 
     Send_ms ++;         
     Send_ms %= 2;  

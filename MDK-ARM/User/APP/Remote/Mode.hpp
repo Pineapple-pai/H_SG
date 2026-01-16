@@ -150,11 +150,13 @@ inline bool KeyBoard()
 inline bool Stop()
 {
     if (!BSP::Remote::dr16.isDrOnline()) {
-    return true;
+        return true;
     }
     return ((dr16.switchLeft() == Dr16::Switch::DOWN) && (dr16.switchRight() == Dr16::Switch::DOWN) ||
-            Gimbal_to_Chassis_Data.getStop() || Dir_Event.getDir_Communication() || Dir_Event.GetDir_Remote() == false);
+            Gimbal_to_Chassis_Data.getStop() || !Dir_Event.getDir_Communication() || Dir_Event.GetDir_Remote() == false);
+    //                                         
 }
+
 /**
  * @brief 按键：左上右中
  * 指定距离移动

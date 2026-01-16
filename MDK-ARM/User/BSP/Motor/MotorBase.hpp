@@ -30,7 +30,7 @@ template <uint8_t N> class MotorBase
     // 设备在线检测
     BSP::WATCH_STATE::StateWatch state_watch_[N];
 
-    virtual void Parse(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData) = 0;
+    virtual void Parse(const HAL::CAN::Frame &frame) = 0;
 
   public:
   void send_can_frame(uint32_t can_id, const uint8_t* data, uint8_t dlc, uint32_t mailbox)
@@ -64,7 +64,7 @@ template <uint8_t N> class MotorBase
                 rx_header.DLC = frame.dlc;
                 
                 // 调用现有的Parse函数处理数据
-                this->Parse(rx_header, frame.data);
+                this->Parse(frame);
             });
         }
     }
@@ -188,12 +188,46 @@ template <uint8_t N> class MotorBase
     {
         for (uint8_t i = 0; i < N; i++)
         {
-            if (this->state_watch_[i].getStatus() != BSP::WATCH_STATE::Status::ONLINE)
+            if (this->state_watch_[i].GetStatus() != BSP::WATCH_STATE::Status::ONLINE)
             {
                 return i + 1; // 返回掉线电机的编号（从1开始计数）
             }
         }
         return 0; // 所有电机都在线
+    }
+
+    /**
+     * @brief 检查指定电机是否在线
+     * 
+     * @param id 电机ID（1-N）
+     * @return true 电机在线
+     * @return false 电机离线或ID无效
+     */
+    bool isMotorOnline(uint8_t id)
+    {
+        if (id >= 1 && id <= N) {
+            state_watch_[id - 1].UpdateTime();
+            state_watch_[id - 1].CheckStatus();
+            return state_watch_[id - 1].GetStatus() == BSP::WATCH_STATE::Status::ONLINE;
+        }
+        return false;
+    }
+
+    /**
+     * @brief 获取第一个离线电机的ID
+     * 
+     * @return uint8_t 第一个离线电机的ID（1-N），如果全部在线则返回0
+     */
+    uint8_t getFirstOfflineMotorId()
+    {
+        for (uint8_t i = 0; i < N; i++) {
+            state_watch_[i].UpdateTime();
+            state_watch_[i].CheckStatus();
+            if (state_watch_[i].GetStatus() == BSP::WATCH_STATE::Status::OFFLINE) {
+                return i + 1;
+            }
+        }
+        return 0;
     }
 };
 } // namespace BSP::Motor

@@ -1,12 +1,14 @@
+#ifndef DJI_MOTOR_HPP
+#define DJI_MOTOR_HPP
+
 #pragma once
 // 基础DJI电机实现
-#include "../MotorBase.hpp"
-#include "../../../HAL/CAN/can_hal.hpp"
-#include "../BSP/state_watch.hpp"
+#include "../BSP/Motor/MotorBase.hpp"
+//#include "../BSP/Common/StateWatch/state_watch.hpp"
 #include "can.h"
 #include <cstdint>
 #include <cstring> // 添加头文件
-#include "arm_math.h"
+#define PI 3.14159265358979323846
 namespace BSP::Motor::Dji
 {
 // 参数结构体定义
@@ -33,10 +35,11 @@ struct Parameters
     Parameters(double rr, double tc, double fmc, double mc, double er)
         : reduction_ratio(rr), torque_constant(tc), feedback_current_max(fmc), current_max(mc), encoder_resolution(er)
     {
+
         encoder_to_deg = 360.0 / encoder_resolution;
         rpm_to_radps = 1 / reduction_ratio / 60 * 2 * PI;
         encoder_to_rpm = 1 / reduction_ratio;
-        current_to_torque_coefficient = torque_constant / feedback_current_max * current_max;
+        current_to_torque_coefficient = reduction_ratio * torque_constant / feedback_current_max * current_max;
         feedback_to_current_coefficient = current_max / feedback_current_max;
         deg_to_real = 1 / reduction_ratio;
     }
@@ -56,9 +59,7 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
      * @param can_id can的初始id 比如3508与20066就是0x200
      * @param params 初始化转换国际单位的参数
      */
-    DjiMotorBase(uint16_t Init_id, const uint8_t (&recv_idxs)[N], uint32_t send_idxs,
-                 Parameters params // 直接接收参数对象
-                 )
+    DjiMotorBase(uint16_t Init_id, const uint8_t (&recv_idxs)[N], uint32_t send_idxs, Parameters params)
         : init_address(Init_id), params_(params)
     {
         // 初始化 recv_idxs_ 和 send_idxs_
@@ -70,34 +71,34 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
     }
 
   public:
+    // 解析函数
     /**
      * @brief 解析CAN数据
      *
      * @param RxHeader  接收数据的句柄
      * @param pData     接收数据的缓冲区
      */
-    void Parse(const CAN_RxHeaderTypeDef RxHeader, const uint8_t *pData)
+    void Parse(const HAL::CAN::Frame &frame) override
     {
-        const uint16_t received_id = HAL::CAN::ICanDevice::extract_id(RxHeader);
+        const uint16_t received_id = frame.id;
 
         for (uint8_t i = 0; i < N; ++i)
         {
             if (received_id == init_address + recv_idxs_[i])
             {
-                memcpy(&feedback_[i], pData, sizeof(DjiMotorfeedback));
+                memcpy(&feedback_[i], frame.data, sizeof(DjiMotorfeedback));
 
                 feedback_[i].angle = __builtin_bswap16(feedback_[i].angle);
                 feedback_[i].velocity = __builtin_bswap16(feedback_[i].velocity);
                 feedback_[i].current = __builtin_bswap16(feedback_[i].current);
 
                 Configure(i);
+
+                // 更新时间戳用于断联检测
                 this->state_watch_[i].UpdateLastTime();
-                this->state_watch_[i].UpdateTime();
-                this->state_watch_[i].CheckStatus();   
             }
         }
     }
-
 
     /**
      * @brief 设置发送数据
@@ -113,11 +114,10 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
 
     /**
      * @brief               发送Can数据
-     *
      * @param han           Can句柄
      * @param pTxMailbox    邮箱
      */
-    void sendCAN(uint32_t pTxMailbox)
+    void sendCAN()
     {
         HAL::CAN::Frame frame;
         frame.id = send_idxs_;
@@ -126,26 +126,9 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
         frame.is_extended_id = false;
         frame.is_remote_frame = false;
         
-        HAL::CAN::get_can_bus_instance().get_can2().send(frame);
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
     }
-    BSP::WATCH_STATE::StateWatch& getStateWatch(uint8_t index)
-    {
-        if (index >= N) {
-            // 处理越界情况
-            index = 0;
-        }
-        return this->state_watch_[index];
-    }
-    
-    // 添加获取电机状态的方法
-    bool isMotorOnline(uint8_t index)
-    {
-        if (index >= N) {
-            index = 0;
-        }
-        // 修复: 使用正确的函数名GetStatus替代getStatus
-        return (this->state_watch_[index].GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
-    }
+
   protected:
     struct alignas(uint64_t) DjiMotorfeedback
     {
@@ -217,7 +200,8 @@ template <uint8_t N> class DjiMotorBase : public MotorBase<N>
     uint8_t recv_idxs_[N];         // ID索引
     uint32_t send_idxs_;
     HAL::CAN::Frame msd;
-    //uint8_t msd[8];
+
+
 
   public:
     Parameters params_; // 转国际单位参数列表
@@ -265,11 +249,11 @@ template <uint8_t N> class GM3508 : public DjiMotorBase<N>
     GM3508(uint16_t Init_id, const uint8_t (&recv_idxs)[N], uint32_t send_idxs)
         : DjiMotorBase<N>(Init_id, recv_idxs, send_idxs,
                           // 直接构造参数对象
-                          Parameters(1.0, 0.3, 16384, 20, 8192))
+                          Parameters(1.0, 0.3 / 1.0, 16384, 20, 8192))
     {
     }
 };
-    
+
 /**
  * @brief 配置6020电机的参数
  *
@@ -309,4 +293,7 @@ template <uint8_t N> class GM6020 : public DjiMotorBase<N>
 
 inline GM3508<4> Motor3508(0x200, {1, 2, 3, 4}, 0x200);
 
+
 } // namespace BSP::Motor::Dji
+
+#endif

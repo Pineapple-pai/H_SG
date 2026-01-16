@@ -708,6 +708,11 @@
               <FileType>8</FileType>
               <FilePath>.\User\BSP\Remote\Dbus.cpp</FilePath>
             </File>
+            <File>
+              <FileName>buzzer_manager.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\User\BSP\Common\StateWatch\buzzer_manager.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

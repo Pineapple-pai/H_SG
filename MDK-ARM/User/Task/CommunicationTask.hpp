@@ -36,7 +36,7 @@
 // 	CONTROL_SIG 0 遥控器
 // 	CONTROL_SIG 1 上下板
 
-#define CONTROL_SIG 0
+#define CONTROL_SIG 1
 #if CONTROL_SIG == 0
 // 期望值切换
 #define TAR_LX BSP::Remote::dr16.remoteLeft().x
@@ -54,15 +54,14 @@
 #define TAR_RY BSP::Remote::dr16.remoteRight().y
 #endif
 // CAN通信相关定义
-#define CAN_Chassis_to_Gimbal_BASE_ID 0x300    // 基础ID
-#define CAN_C2G_FRAME1_ID 0x301  // 第一帧ID
-#define CAN_C2G_FRAME2_ID 0x302  // 第二帧ID
-#define CAN_C2G_FRAME3_ID 0x303  // 第三帧ID
-// 添加云台发送的ID（用于底盘接收）
-#define CAN_GIMBAL_TO_CHASSIS_BASE_ID 0x400
-#define CAN_G2C_FRAME1_ID 0x401
-#define CAN_G2C_FRAME2_ID 0x402
-#define CAN_G2C_FRAME3_ID 0x403
+// ============================================
+// 底盘发送ID（底盘->云台）
+#define CAN_CHASSIS_TO_GIMBAL_ID 0x207       // 底盘->云台（单帧发送裁判系统数据）
+
+// 底盘接收ID（云台->底盘，与云台发送ID对应）
+#define CAN_G2C_FRAME1_ID 0x205              // 第一帧ID（云台发送）
+#define CAN_G2C_FRAME2_ID 0x206              // 第二帧ID（云台发送）
+// ============================================
 
 //#endif
 
@@ -151,7 +150,6 @@ class Gimbal_to_Chassis
     uint8_t can_rx_buffer[23]; // 24字节缓冲区用于重组数据
     bool frame1_received = false;
     bool frame2_received = false; 
-    bool frame3_received = false;
     // 添加时间戳用于超时检测
     uint32_t last_frame_time = 0;
     static constexpr uint32_t FRAME_TIMEOUT = 50; // 50ms超时
