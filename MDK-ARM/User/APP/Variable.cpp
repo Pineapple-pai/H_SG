@@ -21,7 +21,7 @@ Kpid_t ude_Kpid_vel(0, 0, 0);
 PID ude_vel_demo;
 
 //底盘跟随环
-Kpid_t Kpid_vw(-500, 0, 0);
+Kpid_t Kpid_vw(-550, 0, 0);
 PID pid_vw(0.0, 0.0);
 
 // PID速度环设置
@@ -93,7 +93,7 @@ Chassis_Data_t Chassis_Data;
 //斜坡规划
 Class_Slope slope_vx(7.0f, 7.0f, Slope_First_REAL);  // X方向速度
 Class_Slope slope_vy(7.0f, 7.0f, Slope_First_REAL);  // Y方向速度  
-Class_Slope slope_vw(7.5f, 7.5f, Slope_First_REAL);    // 旋转速度
+Class_Slope slope_vw(7.5f, 7.5f, Slope_First_TARGET);    // 旋转速度
 
 // PM01 pm01;
 

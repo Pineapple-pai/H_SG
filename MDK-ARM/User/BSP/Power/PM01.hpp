@@ -213,7 +213,7 @@ namespace BSP::Power
         }        
 
     }
-    static void PM01_Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t *RxData)
+    void PM01_Parse(CAN_RxHeaderTypeDef RxHeader, uint8_t *RxData)
     {
         if (RxHeader.StdId == 0x212)
         {

@@ -126,7 +126,8 @@ inline bool Follow()
  */
 inline bool Rotating()
 {
-    return (dr16.switchLeft() == Dr16::Switch::DOWN && dr16.switchRight() == Dr16::Switch::MIDDLE);
+    return (dr16.switchLeft() == Dr16::Switch::DOWN && dr16.switchRight() == Dr16::Switch::MIDDLE 
+            || Gimbal_to_Chassis_Data.getRotating());
 }
 
 /**

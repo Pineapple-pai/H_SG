@@ -20,7 +20,7 @@ float W2, T2;
 float EffectivePower_t;
 uint16_t time1 = 2;
 uint8_t power  = 100;
-float test_max = 60.0f;
+float test_max = 30.0f;
 
 void RLSTask(void *argument)
 {
@@ -57,7 +57,7 @@ void RLSTask(void *argument)
         Tools.vofaSend(PowerControl.Wheel_PowerData.EstimatedPower,
                       PowerControl.Wheel_PowerData.Cur_EstimatedPower,                      
                       BSP::Power::pm01.pm_power,
-                      PowerControl.Wheel_PowerData.EffectivePower,
+                      PowerControl.String_PowerData.k2,
                       PowerControl.Wheel_PowerData.k1,       
                       PowerControl.Wheel_PowerData.k2);
 
@@ -87,14 +87,14 @@ void PowerUpData_t::UpRLS(PID *pid, const float toque_const, const float rpm_to_
             motor_interface_->GetCurrent(i+1) * motor_interface_->GetCurrent(i+1) * toque_const * toque_const;
     }
     //&& Dir_Event.getSuperCap() == false && Dir_Event.GetDir_String() == false
-    if (is_RLS == true) {
-        //        params = rls.update(samples, BSP::SuperCap::cap.getOutPower() - EffectivePower - k3);
-        params = rls.update(samples, BSP::Power::pm01.pm_power - EffectivePower - k3);
+//    if (is_RLS == true) {
+//        //        params = rls.update(samples, BSP::SuperCap::cap.getOutPower() - EffectivePower - k3);
+//        params = rls.update(samples, BSP::Power::pm01.pm_power - EffectivePower - k3);
 
-        // }
-        k1 = fmax(params[0][0], 1e-5f);
-        k2 = fmax(params[1][0], 1e-5f);
-    }
+//        // }
+//        k1 = fmax(params[0][0], 1e-5f);
+//        k2 = fmax(params[1][0], 1e-5f);
+//    }
 
     Cur_EstimatedPower = k1 * samples[0][0] + k2 * samples[1][0] + EffectivePower + k3;
 

@@ -39,7 +39,9 @@ bool Buzzer::Update()
         buzzerInit = true;
     }
 
-    bool remote_online = dir->GetDir_Remote();
+    // 在板间通信模式下，使用板间通信状态判断是否正常
+    // 因为遥控器连接在云台板，底盘板通过板间通信获取控制信号
+    bool remote_online = dir->getDir_Communication();  // 改用板间通信状态
 
     static bool last_remote_online = true;
 

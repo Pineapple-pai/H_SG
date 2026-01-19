@@ -13,15 +13,15 @@
 extern uint8_t dbus_rx_buffer[18];
 int a=0;
 
-// 添加状态监视器，50ms超时
-BSP::WATCH_STATE::StateWatch state_watch_(50);
+// 添加状态监视器，500ms超时
+BSP::WATCH_STATE::StateWatch state_watch_(500);
 void CommunicationTask(void *argument)
 {
 	osDelay(500);
     for (;;)
     {
         Gimbal_to_Chassis_Data.Transmit();
-        osDelay(20);
+        osDelay(10);
     }
 }
 Communicat::Gimbal_to_Chassis Gimbal_to_Chassis_Data;
@@ -33,6 +33,9 @@ void Gimbal_to_Chassis::Init()
     frame1_received = false;
     frame2_received = false;
     last_frame_time = HAL_GetTick();
+    // 初始化状态监视器的时间戳，避免启动时误判为离线
+    state_watch_.UpdateLastTime();
+    state_watch_.UpdateTime();
 }
 void Gimbal_to_Chassis::HandleCANMessage(uint32_t std_id, uint8_t* data)
 {
@@ -124,6 +127,9 @@ void Gimbal_to_Chassis::SlidingWindowRecovery()
 
 bool Gimbal_to_Chassis::isConnectOnline()
 {
+    // 先更新当前时间，再检查状态，确保判断基于最新时间
+    state_watch_.UpdateTime();
+    state_watch_.CheckStatus();
     return (state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
 }
 

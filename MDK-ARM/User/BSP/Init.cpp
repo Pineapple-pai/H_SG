@@ -60,5 +60,9 @@ void Init()
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
+    
+    // 初始化板间通信，避免启动时误判为离线
+    Gimbal_to_Chassis_Data.Init();
+    
 	InitFlag = true;
 }

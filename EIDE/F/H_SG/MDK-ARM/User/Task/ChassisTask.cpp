@@ -58,7 +58,7 @@ void Chassis_Task::CAN_Send()
     Send_ms++; 
     Send_ms %= 2;
 
-    Tools.vofaSend(BSP::Motor::Dji::Motor3508.getVelocityRpm(1),
-                     BSP::Motor::Dji::Motor3508.getVelocityRpm(2), BSP::Motor::Dji::Motor3508.getVelocityRpm(3),
-											BSP::Motor::Dji::Motor3508.getVelocityRpm(4), 0, 0);
+    // Tools.vofaSend(BSP::Motor::Dji::Motor3508.getVelocityRpm(1),
+    //                  BSP::Motor::Dji::Motor3508.getVelocityRpm(2), BSP::Motor::Dji::Motor3508.getVelocityRpm(3),
+	// 										BSP::Motor::Dji::Motor3508.getVelocityRpm(4), 0, 0);
 }

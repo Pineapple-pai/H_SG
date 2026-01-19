@@ -36,7 +36,7 @@ extern "C" void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
         
 		//BSP::Motor::LK::Motor4005.Parse(rx_frame2);	
         Gimbal_to_Chassis_Data.HandleCANMessage(rx_frame2.id, rx_frame2.data);
-     
+        BSP::Power::PM01ParseDate(rx_frame2);
     }
 }
 

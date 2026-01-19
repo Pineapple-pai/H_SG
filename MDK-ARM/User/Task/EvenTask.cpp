@@ -57,7 +57,7 @@ bool Dir::Dir_String()
         if (!DirData.String[i]) {
             allOnline = false;
             // 请求蜂鸣器报警，鸣叫电机ID次数
-            //BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestMotorRing(i + 1);
+            BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestMotorRing(i + 1);
         }
     }
     return allOnline;
@@ -77,7 +77,7 @@ bool Dir::Dir_Wheel()
         if (!DirData.Wheel[i]) {
             allOnline = false;
             // 请求蜂鸣器报警，鸣叫电机ID次数
-            //BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestMotorRing(i + 1);
+            BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestMotorRing(i + 1);
         }
     }
     return allOnline;
@@ -103,7 +103,7 @@ bool Dir::Dir_Communication()
     DirData.Communication = Gimbal_to_Chassis_Data.isConnectOnline();
     if (!DirData.Communication) {
         // 请求蜂鸣器报警，板间通信鸣叫3次长音
-        //BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestCommunicationRing();
+        BSP::WATCH_STATE::BuzzerManagerSimple::getInstance().requestCommunicationRing();
     }
     return DirData.Communication;
 }

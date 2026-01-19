@@ -7,6 +7,7 @@
 #include "../APP/Variable.hpp"
 #include "cmsis_os2.h"
 #include "../Task/PowerTask.hpp"
+#include "../Task/NewPowerControl.hpp"  // 新功率控制算法
 #include "../APP/Remote/KeyBroad.hpp"
 #include "../APP/Remote/Mode.hpp"
 #include "../APP/UI/Static/darw_static.hpp"
@@ -212,11 +213,13 @@ class Chassis_Task::RotatingHandler : public StateHandler
 
     void RotatingTarget()
     {
-        auto cos_theta = cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
-        auto sin_theta = sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
+        auto cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
+        auto sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle + ROTATION_BIAS * Chassis_Data.vw);
 
-        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
-        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
+        // Use Get_Out() as feedback to create an open-loop slope in Gimbal Frame.
+        // Using Chassis_Data.vx/vy (Chassis Frame) here would cause errors as they oscillate during rotation.
+        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, slope_vx.Get_Out());
+        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, slope_vy.Get_Out());
         float vw_slope = ApplySlope(slope_vw, TAR_VW * 660, Chassis_Data.vw);
 
         //        pid_vw.GetPidPos(Kpid_vw, 0, Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
@@ -306,22 +309,17 @@ void Chassis_Task::updateState()
 
     if(Mode::Chassis::Move()){
         m_currentState = State::MoveState;
-        state_num = 1;
     } else if (Mode::Chassis::Universal()) {
         m_currentState = State::UniversalState;
-        state_num = 2;
     } else if (Mode::Chassis::Follow()) {
         m_currentState = State::FollowState;
-        state_num = 3;
     } else if (Mode::Chassis::Rotating()) {
         m_currentState = State::RotatingState;
-        state_num = 4;
     } else if (Mode::Chassis::KeyBoard()) {
         m_currentState = State::KeyBoardState;
-        state_num = 5;
     } else if (Mode::Chassis::Stop()) {
         m_currentState = State::StopState;
-        state_num = 6;
+
     }
 
 
@@ -382,7 +380,7 @@ void Chassis_Task::Wheel_UpData()
         stringIk.Set_current_steer_angles(currentAngle, i);
     }
     // 对轮子进行运动学变换
-    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 5.0f, 10.0f);
+    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 8.0f, 30.0f);
 
     // 储存最小角判断的速度
     for (int i = 0; i < 4; i++)
@@ -475,21 +473,29 @@ void Chassis_Task::CAN_Setting()
     // }
     for (int i = 0; i < 4; i++) {
         Chassis_Data.final_3508_Out[i] = pid_vel_Wheel[i].GetCout();
+        Chassis_Data.final_4005_Out[i] = pid_vel_String[i].GetCout();
     }
 
-   // 功率控制部分
-//    if (is_ude || Dir_Event.GetDir_String() == false)
-//    {
-//       PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
-//       PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
-//                                                     toque_const_4005, rpm_to_rads_4005);                                          
-//    }
-//    if (is_ude || Dir_Event.GetDir_Wheel() == false)
-//    {
-//       PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
-//       PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
-//                                                    toque_const_3508, rpm_to_rads_3508);
-//    }
+    // ==================== 新功率控制算法 (基于功率控制.md) ====================
+    // 使用六参数模型 + 衰减电流法
+    // 舵向电机优先分配50%功率，轮向使用剩余功率
+   // ApplyPowerLimit(Chassis_Data.final_3508_Out, Chassis_Data.final_4005_Out);
+    // ========================================================================
+
+   // 功率控制部分 (原有控制，已注释保留)
+   if (is_ude || Dir_Event.GetDir_String() == false)
+   {
+      PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
+      PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
+                                                    toque_const_4005, rpm_to_rads_4005);                                          
+   }
+   if (is_ude || Dir_Event.GetDir_Wheel() == false)
+   {
+      PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
+      PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
+                                                   toque_const_3508, rpm_to_rads_3508);
+   }
+
     for(int i = 0; i < 4; i++)
     {
         BSP::Motor::Dji::Motor3508.setCAN(Chassis_Data.final_3508_Out[i], (i + 1));

@@ -154,7 +154,7 @@ namespace SGPowerControl
         // 计算应分配的力矩
         void UpCalcMaxTorque(float *final_Out, PID *pid, const float toque_const, const float rpm_to_rads);
 
-        // 新增：能量环相关方法
+        // 能量环
         void UpdateEnergy(float energy, float dt);  // 更新能量状态（使用缓冲能量）
         float GetAvailableEnergy() const;           // 获取可用能量
         float GetMaxPowerLimit() const;             // 获取当前最大功率限制
@@ -184,8 +184,8 @@ namespace SGPowerControl
         void SetDefaultConfig() {
             // 轮向电机配置 (DJI 3508)
             Wheel_PowerData.MAXPower     = 40.0f;
-            Wheel_PowerData.k1           = 2.63900523;
-            Wheel_PowerData.k2           = 2.3214881027;
+            Wheel_PowerData.k1           = 2.48900523;
+            Wheel_PowerData.k2           = 0.01281027;
             Wheel_PowerData.k3           = 4.0f;
             Wheel_PowerData.is_RLS       = true;
             Wheel_PowerData.E_upper      = 1000.0f;
@@ -193,10 +193,10 @@ namespace SGPowerControl
 
             // 舵向电机配置 (LK 4005)
             String_PowerData.MAXPower    = 40.0f * 0.6f;
-            String_PowerData.k1          = 0.182967603f;
-            String_PowerData.k2          = 8.78055f;
+            String_PowerData.k1          = 15.742967603f;
+            String_PowerData.k2          = 0.0001055f;
             String_PowerData.k3          = 5.0f;
-            String_PowerData.is_RLS      = false;
+            String_PowerData.is_RLS      = true;
             String_PowerData.E_upper     = 500.0f;
             String_PowerData.E_lower     = 100.0f;
         }
