@@ -169,9 +169,13 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+  
+  // UI Initialization
+
   /* Infinite loop */
   for(;;)
   {
+    // UI Update (10Hz)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */

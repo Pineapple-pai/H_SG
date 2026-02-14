@@ -7,7 +7,6 @@
 #include "../APP/Variable.hpp"
 #include "cmsis_os2.h"
 #include "../Task/PowerTask.hpp"
-#include "../Task/NewPowerControl.hpp"  // 新功率控制算法
 #include "../APP/Remote/KeyBroad.hpp"
 #include "../APP/Remote/Mode.hpp"
 #include "../APP/UI/Static/darw_static.hpp"
@@ -21,7 +20,7 @@
 
 TaskManager taskManager;
 float Wheel_Azimuth[4] = {5 * My_PI / 4, 7 * My_PI / 4, 3 * My_PI / 4, My_PI / 4};
-float phase[4] = {2.90079 + 3.14159, 6.352207 + 3.14159, 1.83559 + 3.14159, 5.44465 + 3.14159};
+float phase[4] = {3.576909 - 1.570796, 3.453020 + 0.785398, 1.83559 + 3.14159, 3.41281945};
 
 float torque_ff[4] = {0.0f};
 float pitch_deg = 0.0f;
@@ -58,12 +57,12 @@ class Chassis_Task::UniversalHandler : public StateHandler
 
     void UniversalTarget()
     {
-        auto cos_theta = cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
-        auto sin_theta = sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
 
         float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
         float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
-        float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
+        float vw_slope = ApplySlope(slope_vw, TAR_VW * 660, Chassis_Data.vw);
 
         Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
         Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
@@ -94,13 +93,16 @@ class Chassis_Task::FollowHandler : public StateHandler
     void FllowTarget()
     {
 
-        auto cos_theta = cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
-        auto sin_theta = sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         
         pid_vw.GetPidPos(Kpid_vw, 0, -Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
+
         float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
         float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
         float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
+        
+        
         
         Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
         Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
@@ -136,24 +138,25 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
 
     void FllowTarget()
     {
-        auto cos_theta = cosf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
-        auto sin_theta = sinf(-Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
 
-        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
-        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
-        float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
+        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, slope_vx.Get_Out());
+        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, slope_vy.Get_Out());
 
         angle = Gimbal_to_Chassis_Data.getTargetOffsetAngle();
 
+        float vw_target = 0.0f;
         if (Gimbal_to_Chassis_Data.getRotatingVel() > 0)
         {
-            tar_vw.Calc(Gimbal_to_Chassis_Data.getRotatingVel() * 4);
+            vw_target = Gimbal_to_Chassis_Data.getRotatingVel() * 4;
         }
         else
         {
-            pid_vw.GetPidPos(Kpid_vw, 0, Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
-            tar_vw.Calc(pid_vw.GetCout());
+            pid_vw.GetPidPos(Kpid_vw, 0, -Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
+            vw_target = pid_vw.GetCout(); 
         }
+        float vw_slope = ApplySlope(slope_vw, vw_target, Chassis_Data.vw);
 
         if (Gimbal_to_Chassis_Data.getShitf())
         {
@@ -161,19 +164,15 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         }
         else
         {
-            //            Chassis_Data.now_power = ext_power_heat_data_0x0201.chassis_power_limit +
-            //            Gimbal_to_Chassis_Data.getPower() - 5;
-
-            Chassis_Data.now_power =
-                Tools.clamp(ext_power_heat_data_0x0201.chassis_power_limit + Gimbal_to_Chassis_Data.getPower(), 120.0f,
-                            20) -
-                5;
+            //Chassis_Data.now_power = ext_power_heat_data_0x0201.chassis_power_limit +  Gimbal_to_Chassis_Data.getPower() - 5;
+            Chassis_Data.now_power = Tools.clamp(ext_power_heat_data_0x0201.chassis_power_limit 
+                                        + Gimbal_to_Chassis_Data.getPower(), 120.0f,20) -5;
         }
 
-        if (BSP::Power::pm01.cout_voltage < 12.0f)
-        {
-            Chassis_Data.now_power = ext_power_heat_data_0x0201.chassis_power_limit - 10.0f;
-        }
+        // if (BSP::Power::pm01.cout_voltage < 12.0f)
+        // {
+        //     Chassis_Data.now_power = ext_power_heat_data_0x0201.chassis_power_limit - 10.0f;
+        // }
 
         //        PowerControl.setMaxPower(Chassis_Data.now_power);
 
@@ -380,7 +379,7 @@ void Chassis_Task::Wheel_UpData()
         stringIk.Set_current_steer_angles(currentAngle, i);
     }
     // 对轮子进行运动学变换
-    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 8.0f, 30.0f);
+    stringIk.StringInvKinematics(Chassis_Data.vx / 660.0f, Chassis_Data.vy / 660.0f, Chassis_Data.vw / 660.0f, 0.0f, 15.0f, 30.0f);
 
     // 储存最小角判断的速度
     for (int i = 0; i < 4; i++)
@@ -436,8 +435,25 @@ void Chassis_Task::Filtering()
     }
 }
 
+// 舵向电机目标角度死区阈值（度）
+static constexpr float STEER_ANGLE_DEADZONE = 2.0f;
+// 上一次的目标角度（静态变量，保持状态）
+static float last_steer_target[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+// 初始化标志
+static bool steer_target_initialized = false;
+
 void Chassis_Task::PID_Updata()
 {   
+    // 初始化上一次目标角度（首次运行时）
+    if (!steer_target_initialized)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            last_steer_target[i] = BSP::Motor::LK::Motor4005.getAngleDeg(i+1);
+        }
+        steer_target_initialized = true;
+    }
+    
     // 舵向电机更新
     for (int i = 0; i < 4; i++)
     {
@@ -445,10 +461,26 @@ void Chassis_Task::PID_Updata()
         feed_4005[i].UpData(Chassis_Data.FF_Zero_cross[i]);
         Chassis_Data.FF_Zero_cross[i] = Tools.Round_Error(feed_4005[i].cout, feed_4005[i].target_e, 360);
 
-        pid_angle_String[i].GetPidPos(Kpid_4005_angle, Chassis_Data.Zero_cross[i], BSP::Motor::LK::Motor4005.getAngleDeg(i+1), 5000);
+        // 目标角度死区处理：当目标角度变化很小时，保持上一次的目标
+        float current_target = Chassis_Data.Zero_cross[i];
+        float angle_diff = fabsf(current_target - last_steer_target[i]);
+        
+        // 处理跨越0/360度的情况
+        if (angle_diff > 180.0f)
+        {
+            angle_diff = 360.0f - angle_diff;
+        }
+        
+        // 如果变化超过死区阈值，更新目标；否则保持上一次的目标
+        if (angle_diff > STEER_ANGLE_DEADZONE)
+        {
+            last_steer_target[i] = current_target;
+        }
+        
+        pid_angle_String[i].GetPidPos(Kpid_4005_angle, last_steer_target[i], BSP::Motor::LK::Motor4005.getAngleDeg(i+1), 2048);
         
         // 舵向电机速度环更新
-        pid_vel_String[i].GetPidPos(Kpid_4005_vel, pid_angle_String[i].pid.cout, BSP::Motor::LK::Motor4005.getVelocityRpm(i+1), 500);
+        pid_vel_String[i].GetPidPos(Kpid_4005_vel, pid_angle_String[i].pid.cout, BSP::Motor::LK::Motor4005.getVelocityRpm(i+1), 2048);
         
     }
 
@@ -482,20 +514,43 @@ void Chassis_Task::CAN_Setting()
    // ApplyPowerLimit(Chassis_Data.final_3508_Out, Chassis_Data.final_4005_Out);
     // ========================================================================
 
-   // 功率控制部分 (原有控制，已注释保留)
-   if (is_ude || Dir_Event.GetDir_String() == false)
-   {
-      PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
-      PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
-                                                    toque_const_4005, rpm_to_rads_4005);                                          
-   }
-   if (is_ude || Dir_Event.GetDir_Wheel() == false)
-   {
-      PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
-      PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
-                                                   toque_const_3508, rpm_to_rads_3508);
-   }
+   // ==================== 动态功率分配策略 ====================
+   float total_power_limit = PowerControl.Wheel_PowerData.MAXPower; // 使用设定的总限制 (例如 40W)
+   
+   // 1. 获取舵向估计功率（未限制前）
+   // 注意：此时 String_PowerData.EstimatedPower 是基于当前指令算出的需求功率
+   float string_est_power = PowerControl.String_PowerData.EstimatedPower;
+   
+   // 2. 舵向优先分配
+   // 规则：给舵向分配它需要的功率，但最大不超过总功率的 40% (保证轮子至少有60%动力)
+   float string_max_limit = total_power_limit * 0.4f;
+   float string_alloc_power = string_est_power;
+   if (string_alloc_power > string_max_limit) string_alloc_power = string_max_limit;
+   // 保证舵向至少有 10W 可用 (防止太低无法转向)
+   if (string_alloc_power < 10.0f) string_alloc_power = 10.0f; 
 
+   // 3. 轮向分配剩余功率
+   float wheel_alloc_power = total_power_limit - string_alloc_power;
+   if (wheel_alloc_power < 0) wheel_alloc_power = 0;
+
+   // 4. 应用限制
+   PowerControl.String_PowerData.MAXPower = string_alloc_power;
+   PowerControl.Wheel_PowerData.MAXPower  = wheel_alloc_power;
+
+   // 执行限制计算
+   PowerControl.String_PowerData.UpScaleMaxPow(pid_vel_String);
+   PowerControl.String_PowerData.UpCalcMaxTorque(Chassis_Data.final_4005_Out, pid_vel_String,
+                                                 toque_const_4005, rpm_to_rads_4005);                                          
+
+   PowerControl.Wheel_PowerData.UpScaleMaxPow(pid_vel_Wheel);
+   PowerControl.Wheel_PowerData.UpCalcMaxTorque(Chassis_Data.final_3508_Out, pid_vel_Wheel,
+                                                toque_const_3508, rpm_to_rads_3508);
+                                                
+   // 恢复 MAXPower 为默认值 (防止影响下一次循环的逻辑，虽然这里每帧都重算)
+   PowerControl.Wheel_PowerData.MAXPower = total_power_limit; 
+   // ============================================================
+
+    // 轮向电机输出
     for(int i = 0; i < 4; i++)
     {
         BSP::Motor::Dji::Motor3508.setCAN(Chassis_Data.final_3508_Out[i], (i + 1));
@@ -519,6 +574,15 @@ void Chassis_Task::CAN_Send()
 
     if (Send_ms == 1)
     {
+        static uint8_t status_count = 0;
+        status_count++;
+        if (status_count > 10) status_count = 1;
+        
+        if (status_count <= 4)
+        {
+            BSP::Motor::LK::Motor4005.ReadStatus1(status_count);
+        }
+
         for (int i = 0; i < 4; i++)
         {
             Chassis_Data.final_4005_Out[i] = pid_vel_String[i].GetCout();
@@ -528,15 +592,14 @@ void Chassis_Task::CAN_Send()
     }
     if (Send_ms == 0)
     {
+        // 轮向电机发送
         BSP::Motor::Dji::Motor3508.sendCAN();
     }
 
     Send_ms ++;         
     Send_ms %= 2;  
 
-//    Tools.vofaSend(BSP::Motor::Dji::Motor3508.getVelocityRpm(1), BSP::Motor::Dji::Motor3508.getVelocityRpm(2),
-//                    BSP::Motor::Dji::Motor3508.getVelocityRads(3), BSP::Motor::Dji::Motor3508.getVelocityRads(4), 
-//                    0, 0);
+   Tools.vofaSend(BSP::Motor::LK::Motor4005.getTorque(3), BSP::Motor::LK::Motor4005.getTemperature(3), 0, 0, 0, 0);
 }   
 
 

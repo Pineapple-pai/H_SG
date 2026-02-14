@@ -28,6 +28,9 @@ struct Parameters
     double feedback_to_current_coefficient; // 反馈电流转电流系数
     double deg_to_real;                     // 角度转实际角度系数
 
+    static constexpr double deg_to_rad = 0.017453292519611;
+    static constexpr double rad_to_deg = 1 / 0.017453292519611;
+
 
 
     // 构造函数带参数计算
@@ -57,6 +60,8 @@ protected:
         int16_t current;
         int16_t velocity;
         uint16_t angle;
+        uint16_t voltage;
+        uint8_t error_state;
     };
 
     struct MultiAngleData
@@ -98,7 +103,7 @@ private:
         const auto &params = params_;
 
         this->unit_data_[i].angle_Deg = feedback.angle * params.encoder_to_deg;
-        this->unit_data_[i].angle_Rad = this->unit_data_[i].angle_Deg * params.deg_to_real;
+        this->unit_data_[i].angle_Rad = this->unit_data_[i].angle_Deg * params.deg_to_rad;
         this->unit_data_[i].velocity_Rad = feedback.velocity * params.rpm_to_radps;
         this->unit_data_[i].velocity_Rpm = feedback.velocity * params.encoder_to_rpm;
         this->unit_data_[i].current_A = feedback.current * params.feedback_to_current_coefficient;
@@ -144,12 +149,27 @@ public:
                 const uint8_t* pData = frame.data;
                 
                 feedback_[i].cmd = pData[0];
-                feedback_[i].temperature = pData[1];               
-                feedback_[i].current = (int16_t)((pData[3] << 8) | pData[2]);
-                feedback_[i].velocity = (int16_t)((pData[5] << 8) | pData[4]);
-                feedback_[i].angle = (uint16_t)((pData[7] << 8) | pData[6]);
+                // if (feedback_[i].cmd == 0x9A || feedback_[i].cmd == 0x9B)
+                // {
+                //     feedback_[i].temperature = pData[1];
+                //     feedback_[i].voltage = (uint16_t)((pData[4] << 8) | pData[3]);
+                //     feedback_[i].error_state = pData[7];
+                    
+                //     // 仅在读取状态回复(0x9A)且有错误时尝试清除，避免0x9B回复导致的无限循环
+                //     if (feedback_[i].cmd == 0x9A && feedback_[i].error_state != 0)
+                //     {
+                //         ClearErr(i + 1);
+                //     }
+                // }
+                // else
+                // {
+                    feedback_[i].temperature = pData[1];               
+                    feedback_[i].current = (int16_t)((pData[3] << 8) | pData[2]);
+                    feedback_[i].velocity = (int16_t)((pData[5] << 8) | pData[4]);
+                    feedback_[i].angle = (uint16_t)((pData[7] << 8) | pData[6]);
 
-                Configure(i, feedback_[i]);
+                    Configure(i, feedback_[i]);
+                // }
                 // 更新时间戳用于断联检测
                 this->state_watch_[i].UpdateLastTime();
             }
@@ -196,6 +216,23 @@ public:
     void ClearErr(uint8_t id)
     {
         uint8_t send_data[8] = {0x9B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        
+        HAL::CAN::Frame frame;
+        frame.id = init_address + send_idxs_[id - 1];
+        frame.dlc = 8;
+        memcpy(frame.data, send_data, sizeof(send_data));
+        frame.is_extended_id = false;
+        frame.is_remote_frame = false;
+        
+        HAL::CAN::get_can_bus_instance().get_can1().send(frame);
+    }
+
+    /**
+     * @brief 读取电机状态1和错误标志命令
+     */
+    void ReadStatus1(uint8_t id)
+    {
+        uint8_t send_data[8] = {0x9A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         
         HAL::CAN::Frame frame;
         frame.id = init_address + send_idxs_[id - 1];

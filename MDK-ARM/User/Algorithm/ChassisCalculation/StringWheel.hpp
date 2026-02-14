@@ -370,7 +370,8 @@ namespace Alg::CalculationBase
                     if (tmp_velocity_modulus == 0.0f)
                     {
                         // 排除除零问题，保持当前角度
-                        Motor_direction[i] = atan2f((R * cosf(Wheel_Azimuth[i])), (-R * sinf(Wheel_Azimuth[i]))) + Phase[i];
+                        //Motor_direction[i] = atan2f((R * cosf(Wheel_Azimuth[i])), (-R * sinf(Wheel_Azimuth[i]))) + Phase[i];
+                        //Motor_direction[i] = current_steer_angles[i];
                     }
                     else
                     {

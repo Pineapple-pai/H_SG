@@ -180,10 +180,10 @@ targets:
       - ../MDK-ARM/User/BSP/SuperCap/SuperCap.cpp
       - ../MDK-ARM/User/BSP/Power/PM01.cpp
       - ../MDK-ARM/User/APP/RM_UI/ui_ROT_user.c
-      - ../MDK-ARM/User/APP/RM_UI
       - ../MDK-ARM/User/Algorithm/Wheel.cpp
       - ../MDK-ARM/User/BSP/state_watch.cpp
       - ../MDK-ARM/User/APP/CommunicationTask.cpp
+      - ../MDK-ARM/User/codes (1)
     toolchain: AC6
     toolchainConfigMap:
       AC6:

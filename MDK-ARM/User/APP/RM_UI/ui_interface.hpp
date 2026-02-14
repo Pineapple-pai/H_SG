@@ -6,7 +6,7 @@
 #ifndef UI_INTERFACE_H
 #define UI_INTERFACE_H
 
-#include "ui_types.hpp"
+#include "ui_types.h"
 
 extern int ui_self_id;
 

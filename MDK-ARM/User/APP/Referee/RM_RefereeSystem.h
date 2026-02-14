@@ -89,7 +89,6 @@ struct __attribute__((packed)) ext_power_heat_data_t
     float chassis_power;
     uint16_t chassis_power_buffer;
     uint16_t shooter_id1_17mm_cooling_heat;
-    uint16_t shooter_id2_17mm_cooling_heat;
     uint16_t shooter_id1_42mm_cooling_heat;
 };
 // 0x0301 机器人间交互数据

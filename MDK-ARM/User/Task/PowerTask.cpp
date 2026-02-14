@@ -20,7 +20,7 @@ float W2, T2;
 float EffectivePower_t;
 uint16_t time1 = 2;
 uint8_t power  = 100;
-float test_max = 30.0f;
+float test_max = 60.0f;
 
 void RLSTask(void *argument)
 {
@@ -32,34 +32,47 @@ void RLSTask(void *argument)
     float prev_e_t = 0.0f;
     float dt = 0.001f;  // 1ms周期
 
-    PowerControl.Wheel_PowerData.MAXPower = test_max;
-    PowerControl.String_PowerData.MAXPower = test_max * 0.6f;
-    
     for (;;) {
+//        if (ext_power_heat_data_0x0201.chassis_power_limit > 0) {
+//            PowerControl.Wheel_PowerData.MAXPower = ext_power_heat_data_0x0201.chassis_power_limit;
+//            PowerControl.String_PowerData.MAXPower = ext_power_heat_data_0x0201.chassis_power_limit * 0.5f;
+//        } else {
+             // Fallback if referee data is not yet valid (optional, keep test_max or a safe default)
+             PowerControl.Wheel_PowerData.MAXPower = test_max;
+             PowerControl.String_PowerData.MAXPower = test_max * 0.5f;
+//        }
+
         // 轮向电机功率计算 (DJI 3508)
         PowerControl.Wheel_PowerData.UpRLS(pid_vel_Wheel, toque_const_3508, rpm_to_rads_3508);
         
         // 舵向电机功率计算 (LK 4005)
         PowerControl.String_PowerData.UpRLS(pid_vel_String, toque_const_4005, rpm_to_rads_4005);
 
-        // 获取裁判系统反馈的缓冲能量（单位：J）
-        float buffer_energy = ext_power_heat_data_0x0202.chassis_power_buffer;  // 转换为焦耳
+        // ========== 能量环 ==========
+        // 获取裁判系统反馈的缓冲能量（单位：J，最大60J）
+        float buffer_energy = (float)ext_power_heat_data_0x0202.chassis_power_buffer;
 
-        // 更新能量环，使用裁判反馈的缓冲能量
-        //PowerControl.Wheel_PowerData.UpdateEnergy(buffer_energy, dt);
+        // 能量环更新：以35J为阈值
+        // buffer_energy > 35J → 能量充足，放电补充功率，提升 MAXPower
+        // buffer_energy < 35J → 能量不足，充电超级电容，降低 MAXPower
+        PowerControl.Wheel_PowerData.EnergyLoopUpdate(buffer_energy, test_max, dt);
+        // 舵向电机功率按比例跟随轮向电机
+        PowerControl.String_PowerData.MAXPower = PowerControl.Wheel_PowerData.MAXPower * 0.5f;
+
         float lim_cin_power = 100 - 1.0f;
-        // 获取当前最大功率限制
-        //float max_power_limit = PowerControl.Wheel_PowerData.GetMaxPowerLimit();
 
         // 发送CAN指令
         BSP::SuperCap::cap.SetSendValue(lim_cin_power);
         BSP::SuperCap::cap.sendCAN(&hcan2, CAN_TX_MAILBOX0);
-        Tools.vofaSend(PowerControl.Wheel_PowerData.EstimatedPower,
-                      PowerControl.Wheel_PowerData.Cur_EstimatedPower,                      
-                      BSP::Power::pm01.pm_power,
-                      PowerControl.String_PowerData.k2,
-                      PowerControl.Wheel_PowerData.k1,       
-                      PowerControl.Wheel_PowerData.k2);
+        // 功率验证模式 - 对比总估计功率 vs PM01 实测
+        float total_est_power = PowerControl.Wheel_PowerData.EstimatedPower 
+                              + PowerControl.String_PowerData.EstimatedPower;
+        // Tools.vofaSend(total_est_power,                                   // 总估计功率
+        //               BSP::Power::pm01.pm_power,                          // PM01 实测总功率
+        //               PowerControl.Wheel_PowerData.EstimatedPower,        // 轮向估计功率
+        //               PowerControl.String_PowerData.EstimatedPower,       // 舵向估计功率
+        //               PowerControl.Wheel_PowerData.MAXPower,              // 功率上限
+        //               total_est_power - BSP::Power::pm01.pm_power);       // 误差
 
         osDelay(1);
     }
@@ -79,8 +92,10 @@ void PowerUpData_t::UpRLS(PID *pid, const float toque_const, const float rpm_to_
     }
 
     for (int i = 0; i < 4; i++) {
+        // ⚠️ 功率是标量，需要取绝对值！
+        // 否则不同方向的电机功率会互相抵消
         EffectivePower +=
-            motor_interface_->GetCurrent(i+1) * motor_interface_->GetSpeed(i+1) * toque_const * rpm_to_rads;
+            fabs(motor_interface_->GetCurrent(i+1) * motor_interface_->GetSpeed(i+1))  * rpm_to_rads;
 
         samples[0][0] += fabs(motor_interface_->GetSpeed(i+1)) * rpm_to_rads;
         samples[1][0] +=
@@ -131,26 +146,40 @@ void PowerUpData_t::UpScaleMaxPow(PID *pid)
     }
 }
 
-// 能量环
-void PowerUpData_t::EnergyLoop()
+// 能量环实现
+// 基于缓冲能量的PD控制器，动态调整功率上限 MAXPower
+// energy_fb: 能量反馈值（裁判系统缓冲能量，单位J，范围0~60）
+// ref_power: 用户设定的功率参考值（如 test_max）
+// dt: 控制周期（秒）
+void PowerUpData_t::EnergyLoopUpdate(float energy_fb, float ref_power, float dt)
 {
-    float base_err = sqrt(target_base_power) - sqrt(BSP::Power::pm01.cout_voltage);
-    float full_err = sqrt(target_full_power) - sqrt(BSP::Power::pm01.cout_voltage);
+    energy_feedback = energy_fb;
+    P_ref = ref_power;
 
-    base_Max_power = fmax(ext_power_heat_data_0x0201.chassis_power_limit - base_err * base_kp, 15.0f);
-    full_Max_power = fmax(ext_power_heat_data_0x0201.chassis_power_limit - full_err * full_kp, 15.0f);
+    // e(t) = sqrt(E_s) - sqrt(E_f)
+    // 使用开方过渡函数：能量高时变化平缓，能量低时变化剧烈
+    energy_err = sqrtf(fmaxf(energy_target, 0.0f)) - sqrtf(fmaxf(energy_feedback, 0.0f));
+
+    // PD控制器: P_max = P_ref - Kp * e(t) - Kd * de/dt
+    // 当 energy_fb > 35J 时，e(t) < 0，P_max > P_ref → 放电补充功率
+    // 当 energy_fb < 35J 时，e(t) > 0，P_max < P_ref → 充电超级电容
+    float de_dt = (dt > 1e-6f) ? (energy_err - energy_err_prev) / dt : 0.0f;
+    energy_pmax_output = P_ref - energy_Kp * energy_err - energy_Kd * de_dt;
+
+    // 功率上下限 clamp
+    energy_pmax_output = fmaxf(energy_pmax_output, MIN_POWER);
+    energy_pmax_output = fminf(energy_pmax_output, P_ref + 300.0f);  // 电容最大额外补偿300W
+
+    // 更新误差历史
+    energy_err_prev = energy_err;
+
+    // 将能量环输出写入 MAXPower，供功率环使用
+    MAXPower = energy_pmax_output;
 }
 
-// 计算应分配的力矩
+// 计算应分配的力矩（功率环 - 未修改）
 void PowerUpData_t::UpCalcMaxTorque(float *final_Out, PID *pid, const float toque_const, const float rpm_to_rads)
 {
-    // EnergyLoop();
-
-    // if (BSP::Power::pm01.cout_voltage > 24 * 0.9) {
-    //     MAXPower = full_Max_power;
-    // }
-
-    // MAXPower = clamp(MAXPower, full_Max_power, base_Max_power);
     if (EstimatedPower > MAXPower) 
     {
         for (int i = 0; i < 4; i++) {
@@ -175,31 +204,3 @@ void PowerUpData_t::UpCalcMaxTorque(float *final_Out, PID *pid, const float toqu
         }
     }
 }
-
-// 新增：能量环相关方法实现
-// void PowerUpData_t::UpdateEnergy(float power, float dt)
-// {
-//     // 假设电容最大输出为300W，因此用户输入的最大底盘功率输出为裁判系统功率上限+300W
-//     float energy_change = power * dt;  // 单位：焦耳
-//     Energy += energy_change;
-
-//     // 限制能量在0到60J之间
-//     Energy = fmax(0.0f, fmin(Energy, 60.0f));
-// }
-
-// float PowerUpData_t::GetAvailableEnergy() const
-// {
-//     return Energy;
-// }
-
-// float PowerUpData_t::GetMaxPowerLimit() const
-// {
-//     // 根据能量状态动态调整最大功率限制
-//     float e_t = sqrtf(E_upper) - sqrtf(Energy);  // e(t) = √E_s - √E_f
-//     float p_max = refMaxPower - Kp * e_t - Kd * (e_t - e_t_prev) / dt;
-
-//     // 防止功率下限过低
-//     p_max = fmax(p_max, MIN_MAXPOWER_CONFIGURED);
-
-//     return p_max;
-// }

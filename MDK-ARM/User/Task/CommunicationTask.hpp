@@ -128,8 +128,10 @@ class Gimbal_to_Chassis
         uint8_t UI_F5 : 1;
         uint8_t Shift : 1;
         uint8_t Vision : 2;
+        uint8_t friction_enabled : 1;
         uint8_t vis_aim_x;
         uint8_t vis_aim_y;
+        int16_t projectile_count;
     };
 
     struct __attribute__((packed)) Booster // 裁判系统
@@ -170,7 +172,7 @@ class Gimbal_to_Chassis
     struct UiList ui_list;
 
     struct Booster booster;
-		struct IMU imu;
+	struct IMU imu;
 	
   public:
     bool getUniversal()
@@ -250,6 +252,16 @@ class Gimbal_to_Chassis
     uint8_t getAimY()
     {
         return ui_list.vis_aim_y;
+    }
+
+    bool getFrictionEnabled()
+    {
+        return ui_list.friction_enabled;
+    }
+
+    int16_t getProjectileCount()
+    {
+        return ui_list.projectile_count;
     }
 
     void setNowBoosterHeat(uint16_t now_heat)

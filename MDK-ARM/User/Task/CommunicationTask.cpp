@@ -66,7 +66,7 @@ void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
             return;
     }
 
-    // 如果三帧都接收完成，处理数据
+    
     if (frame1_received || frame2_received) {
         ProcessReceivedData();
 

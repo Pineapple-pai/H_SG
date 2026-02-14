@@ -9,10 +9,10 @@
 extern "C" {
 #endif
 
-#include "ui_interface.hpp"
+#include "ui_interface.h"
 
-#include "ui_ROT.hpp"
-#include "ui_default.hpp"
+#include "ui_ROT.h"
+#include "ui_default.h"
 
 #ifdef __cplusplus
 }

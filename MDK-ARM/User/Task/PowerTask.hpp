@@ -97,7 +97,7 @@ namespace SGPowerControl
         Matrixf<2, 1> params;
 
         float MAXPower;
-        PowerUpData_t() : rls(1e-4f, 0.9999f), motor_interface_(nullptr), Init_flag(false)
+        PowerUpData_t() : rls(1e-4f, 0.99995f), motor_interface_(nullptr), Init_flag(false)
         {
             // 初始化成员变量
             k1 = k2 = k3 = k0 = 0.0f;
@@ -154,24 +154,20 @@ namespace SGPowerControl
         // 计算应分配的力矩
         void UpCalcMaxTorque(float *final_Out, PID *pid, const float toque_const, const float rpm_to_rads);
 
-        // 能量环
-        void UpdateEnergy(float energy, float dt);  // 更新能量状态（使用缓冲能量）
-        float GetAvailableEnergy() const;           // 获取可用能量
-        float GetMaxPowerLimit() const;             // 获取当前最大功率限制
+        // ========== 能量环参数 ==========
+        float energy_Kp = 5.0f;            // 能量环P系数
+        float energy_Kd = 0.0f;            // 能量环D系数（建议初始设为0，避免震荡）
+        float energy_target = 35.0f;       // 能量目标值（J），缓冲能量阈值
+        float energy_feedback = 0.0f;      // 能量反馈值
+        float energy_err = 0.0f;           // 当前能量误差 e(t)
+        float energy_err_prev = 0.0f;      // 上一次能量误差 e(t-1)
+        float energy_pmax_output = 0.0f;   // 能量环输出的 P_max
+        float P_ref = 60.0f;              // 用户设定的功率参考值
+        static constexpr float MIN_POWER = 15.0f;          // 功率下限
+        static constexpr float MAX_BUFFER_ENERGY = 60.0f;  // 缓冲能量上限（J）
 
-        float target_full_power;
-        float target_base_power;
-
-        float cur_power;
-
-        float full_kp = 0.1;
-        float base_kp = 0.1;
-
-        float base_Max_power;
-        float full_Max_power;
-
-        // 能量环
-        void EnergyLoop();
+        // 能量环更新方法
+        void EnergyLoopUpdate(float energy_fb, float ref_power, float dt);
     };
 
     class PowerTask_t
@@ -183,20 +179,21 @@ namespace SGPowerControl
         }
         void SetDefaultConfig() {
             // 轮向电机配置 (DJI 3508)
+            // 优化参数：提高功率利用率
             Wheel_PowerData.MAXPower     = 40.0f;
-            Wheel_PowerData.k1           = 2.48900523;
-            Wheel_PowerData.k2           = 0.01281027;
+            Wheel_PowerData.k1           = 3.8f;    // 回调：从 8.0 -> 5.5
+            Wheel_PowerData.k2           = 1.2f;    // 回调：从 3.0 -> 1.5
             Wheel_PowerData.k3           = 4.0f;
-            Wheel_PowerData.is_RLS       = true;
+            Wheel_PowerData.is_RLS       = false;
             Wheel_PowerData.E_upper      = 1000.0f;
             Wheel_PowerData.E_lower      = 500.0f;
 
             // 舵向电机配置 (LK 4005)
             String_PowerData.MAXPower    = 40.0f * 0.6f;
-            String_PowerData.k1          = 15.742967603f;
-            String_PowerData.k2          = 0.0001055f;
+            String_PowerData.k1          = 25.0f;   // 回调：从 25.76 -> 16.0
+            String_PowerData.k2          = 5.5f;    // 大幅回调：从 5.0 -> 0.5
             String_PowerData.k3          = 5.0f;
-            String_PowerData.is_RLS      = true;
+            String_PowerData.is_RLS      = false;    
             String_PowerData.E_upper     = 500.0f;
             String_PowerData.E_lower     = 100.0f;
         }

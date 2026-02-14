@@ -14,7 +14,7 @@
 //Defalut_t Defalut_t_t;
 bool InitFlag = false;
 extern uint8_t dbus_rx_buffer[18];
-extern uint8_t referee_rx_buffer[18];
+extern uint8_t referee_rx_buffer[256];
 
 void Init()
 {
@@ -30,12 +30,12 @@ void Init()
 	//BSP::Motor::LK::Motor4005.registerCallback(&can1);
 
     auto& uart3 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart3);
-	HAL::UART::Data dbus_rx_data{dbus_rx_buffer, sizeof(dbus_rx_buffer)};
+		HAL::UART::Data dbus_rx_data{dbus_rx_buffer, sizeof(dbus_rx_buffer)};
 
     auto& uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
     HAL::UART::Data referee{referee_rx_buffer, sizeof(referee_rx_buffer)};
-	uart3.receive_dma_idle(dbus_rx_data);
-    // can1.register_rx_callback([](const HAL::CAN::Frame &frame)
+    uart3.receive_dma_idle(dbus_rx_data);
+    uart6.receive_dma_idle(referee);
     // {
     //    if(frame.id == CAN_G2C_FRAME1_ID ||
     //         frame.id == CAN_G2C_FRAME2_ID) {
@@ -52,7 +52,7 @@ void Init()
 
     // });
     
-	HAL_TIM_Base_Start_IT(&htim7);
+		HAL_TIM_Base_Start_IT(&htim7);
     // 开启定时器
     HAL_TIM_Base_Start(&htim4);
     // 开启PWM通道

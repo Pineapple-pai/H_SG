@@ -1,8 +1,39 @@
+# Keil MDK-ARM
 MDK-ARM/SG_CHASSIS_C_2024_11_5/
-MDKARM/build/
+MDK-ARM/SG_GIMBAL_C_2025_2_7/
 MDK-ARM/SG_CHASSIS_C_2024_11_5_EIDE/
+MDK-ARM/RTE/
+MDK-ARM/DebugConfig/
 MDK-ARM/*.uvoptx
 MDK-ARM/*.uvguix.*
-.vs/
+MDK-ARM/build/
+*.bak
+*.dep
+*.o
+*.d
+*.crf
+*.map
+*.htm
+*.lnp
+*.sct
+*.lst
+*.axf
+*.elf
+*.bin
+*.hex
+
+# EIDE
+.eide/
+build/
+
+# VS Code
 .vscode/
+.vs/
+*.code-workspace
 CppProperties.json
+
+# System / Misc
+Thumbs.db
+Desktop.ini
+*.log
+*.tmp

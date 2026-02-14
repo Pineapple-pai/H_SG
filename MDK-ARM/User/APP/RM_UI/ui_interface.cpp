@@ -5,7 +5,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "ui_interface.hpp"
+#include "ui_interface.h"
 
 uint8_t seq = 0;
 int ui_self_id = 1;

@@ -10,7 +10,7 @@
 #include <algorithm>
 
 uint8_t dbus_rx_buffer[18];
-uint8_t referee_rx_buffer[18];
+uint8_t referee_rx_buffer[256];
 
 extern "C" void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
@@ -53,7 +53,11 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
     }
     else if(huart == uart6.get_handle())
     {
-        RM_RefereeSystem::RM_RefereeSystemParse(huart);
+        for(int i = 0; i < Size; i++)
+        {
+            RM_RefereeSystem::RM_RefereeSystemGetData(referee_rx_buffer[i]);
+        }
         HAL::UART::Data referee{referee_rx_buffer, sizeof(referee_rx_buffer)};
+        uart6.receive_dma_idle(referee);
     }
 }
