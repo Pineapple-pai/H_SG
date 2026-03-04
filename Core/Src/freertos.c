@@ -65,14 +65,14 @@ const osThreadAttr_t chassisTask_attributes = {
 osThreadId_t communicationTaHandle;
 const osThreadAttr_t communicationTa_attributes = {
   .name = "communicationTa",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for refeeTask */
 osThreadId_t refeeTaskHandle;
 const osThreadAttr_t refeeTask_attributes = {
   .name = "refeeTask",
-  .stack_size = 128 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for rlsTask */
@@ -141,7 +141,7 @@ void MX_FREERTOS_Init(void) {
   communicationTaHandle = osThreadNew(CommunicationTask, NULL, &communicationTa_attributes);
 
   /* creation of refeeTask */
-  //refeeTaskHandle = osThreadNew(RefeeTask, NULL, &refeeTask_attributes);
+  refeeTaskHandle = osThreadNew(RefeeTask, NULL, &refeeTask_attributes);
 
   /* creation of rlsTask */
   rlsTaskHandle = osThreadNew(RLSTask, NULL, &rlsTask_attributes);

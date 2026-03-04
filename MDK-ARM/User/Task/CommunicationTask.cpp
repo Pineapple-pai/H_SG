@@ -9,9 +9,12 @@
 #include "../HAL/UART/uart_hal.hpp"
 #include "../BSP/state_watch.hpp"
 #include "../HAL/CAN/can_hal.hpp"
+#include "../APP/UI/UI_RefreshBridge.hpp"
 #define SIZE 8
 extern uint8_t dbus_rx_buffer[18];
 int a=0;
+
+UI::Refresh::Probe UI::Refresh::g_probe = {};
 
 // 添加状态监视器，500ms超时
 BSP::WATCH_STATE::StateWatch state_watch_(500);
@@ -21,7 +24,7 @@ void CommunicationTask(void *argument)
     for (;;)
     {
         Gimbal_to_Chassis_Data.Transmit();
-        osDelay(10);
+        osDelay(4);
     }
 }
 Communicat::Gimbal_to_Chassis Gimbal_to_Chassis_Data;
@@ -67,7 +70,9 @@ void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
     }
 
     
-    if (frame1_received || frame2_received) {
+    // Only parse when both CAN frames are present; otherwise ui_list/chassis_mode
+    // may be decoded from half-old, half-new bytes and cause random UI state.
+    if (frame1_received && frame2_received) {
         ProcessReceivedData();
 
         state_watch_.UpdateLastTime();
@@ -96,6 +101,8 @@ void Gimbal_to_Chassis::ProcessReceivedData()
 
     std::memcpy(&ui_list, ptr, sizeof(ui_list));
     ptr += sizeof(ui_list);
+
+    UI::Refresh::NotifyUiDataUpdated();
 }
 
 void Gimbal_to_Chassis::SlidingWindowRecovery()

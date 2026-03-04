@@ -17,11 +17,14 @@
 #include "../BSP/Motor/Dji/DjiMotor.hpp"
 #include "../Algorithm/ChassisCalculation/StringWheel.hpp"
 #include "../Task/CallBack.hpp"
-
+#define p 3.14159
+#define p3 2.35619
+#define p2 1.570795
+#define p4 0.7853975
 TaskManager taskManager;
-float Wheel_Azimuth[4] = {5 * My_PI / 4, 7 * My_PI / 4, 3 * My_PI / 4, My_PI / 4};
-float phase[4] = {3.576909 - 1.570796, 3.453020 + 0.785398, 1.83559 + 3.14159, 3.41281945};
-
+float Wheel_Azimuth[4] = {5 * My_PI / 4, 7 * My_PI / 4, My_PI / 4, 3 * My_PI / 4};
+float phase[4] = {3.52173 + p3, 3.99659 + p4, 4.53233 - p4, 5.05887 - p3};
+//3.52173  3.99659 4.53233 5.05887
 float torque_ff[4] = {0.0f};
 float pitch_deg = 0.0f;
 float pitch_rad = 0.0f;
@@ -44,6 +47,7 @@ void ChassisTask(void *argument)
 }
 float k = 0.0f;
 float tar_vw_angle = 3.1415926535f;
+static constexpr float FOLLOW_YAW_DEADZONE_DEG = 1.0f;
 
 //=== 状态处理器实现 ===//
 class Chassis_Task::UniversalHandler : public StateHandler
@@ -92,15 +96,20 @@ class Chassis_Task::FollowHandler : public StateHandler
 
     void FllowTarget()
     {
+        float yaw_err = Gimbal_to_Chassis_Data.getEncoderAngleErr();
+        if (fabsf(yaw_err) <= 2.0f * 0.017453f)
+        {
+            yaw_err = 0.0f;
+        }
 
-        auto cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
-        auto sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
+        auto cos_theta = cosf(yaw_err + tar_vw_angle);
+        auto sin_theta = sinf(yaw_err + tar_vw_angle);
         
-        pid_vw.GetPidPos(Kpid_vw, 0, -Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
+        pid_vw.GetPidPos(Kpid_vw, 0, yaw_err, 10000);
 
-        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, Chassis_Data.vx);
-        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, Chassis_Data.vy);
-        float vw_slope = ApplySlope(slope_vw, pid_vw.GetCout(), Chassis_Data.vw);
+        float vx_slope = TAR_LX * 660.0f;                                                                                                                                                                         
+        float vy_slope = TAR_LY * 660.0f;                                                                                                                                                                         
+        float vw_slope = pid_vw.GetCout(); 
         
         
         
@@ -141,8 +150,8 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         auto cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
         auto sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + tar_vw_angle);
 
-        float vx_slope = ApplySlope(slope_vx, TAR_LX * 660, slope_vx.Get_Out());
-        float vy_slope = ApplySlope(slope_vy, TAR_LY * 660, slope_vy.Get_Out());
+        float vx_slope = TAR_LX * 660.0f;                                                                                                                                                                         
+        float vy_slope = TAR_LY * 660.0f;                                                                                                                                                                         
 
         angle = Gimbal_to_Chassis_Data.getTargetOffsetAngle();
 
@@ -155,8 +164,8 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         {
             pid_vw.GetPidPos(Kpid_vw, 0, -Gimbal_to_Chassis_Data.getEncoderAngleErr(), 10000);
             vw_target = pid_vw.GetCout(); 
-        }
-        float vw_slope = ApplySlope(slope_vw, vw_target, Chassis_Data.vw);
+        }                                                                                                                                                                                                                                                                                                                                               
+        float vw_slope = pid_vw.GetCout(); 
 
         if (Gimbal_to_Chassis_Data.getShitf())
         {
@@ -176,11 +185,6 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
 
         //        PowerControl.setMaxPower(Chassis_Data.now_power);
 
-        if (Gimbal_to_Chassis_Data.getF5())
-        {
-            UI::UI_send_queue.is_Delete_all = true;
-            UI::Static::UI_static.Init();
-        }
         Chassis_Data.vx = (vx_slope * cos_theta - vy_slope * sin_theta);
         Chassis_Data.vy = (vx_slope * sin_theta + vy_slope * cos_theta);
         Chassis_Data.vw = vw_slope;
@@ -599,7 +603,8 @@ void Chassis_Task::CAN_Send()
     Send_ms ++;         
     Send_ms %= 2;  
 
-   Tools.vofaSend(BSP::Motor::LK::Motor4005.getTorque(3), BSP::Motor::LK::Motor4005.getTemperature(3), 0, 0, 0, 0);
+   Tools.vofaSend(BSP::Motor::LK::Motor4005.getAngleRad(1), BSP::Motor::LK::Motor4005.getAngleRad(2), 
+                    BSP::Motor::LK::Motor4005.getAngleRad(3), BSP::Motor::LK::Motor4005.getAngleRad(4), 0, 0);
 }   
 
 

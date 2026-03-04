@@ -61,3 +61,22 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
         uart6.receive_dma_idle(referee);
     }
 }
+
+extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    auto& uart3 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart3);
+    auto& uart6 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart6);
+
+    if (huart == uart6.get_handle()) {
+        // ORE/FE/NE 等错误后，清标志并重启 DMA+IDLE 接收，避免裁判串口接收中断。
+        __HAL_UART_CLEAR_OREFLAG(huart);
+        HAL_UART_AbortReceive(huart);
+        HAL::UART::Data referee{referee_rx_buffer, sizeof(referee_rx_buffer)};
+        uart6.receive_dma_idle(referee);
+    } else if (huart == uart3.get_handle()) {
+        __HAL_UART_CLEAR_OREFLAG(huart);
+        HAL_UART_AbortReceive(huart);
+        HAL::UART::Data dbus_rx_data{dbus_rx_buffer, sizeof(dbus_rx_buffer)};
+        uart3.receive_dma_idle(dbus_rx_data);
+    }
+}

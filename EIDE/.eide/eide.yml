@@ -184,6 +184,7 @@ targets:
       - ../MDK-ARM/User/BSP/state_watch.cpp
       - ../MDK-ARM/User/APP/CommunicationTask.cpp
       - ../MDK-ARM/User/codes (1)
+      - ../MDK-ARM/User/APP/RM_UI
     toolchain: AC6
     toolchainConfigMap:
       AC6:
