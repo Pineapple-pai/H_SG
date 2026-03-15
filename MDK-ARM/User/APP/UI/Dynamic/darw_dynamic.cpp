@@ -16,6 +16,19 @@ int16_t yawa;
 int16_t yawb;
 namespace UI::Dynamic
 {
+    namespace
+    {
+        void QueueStatusText(const char *name, uint32_t layer, const char *text,
+                             uint32_t x, uint32_t y, int color, int operate_type)
+        {
+            RM_RefereeSystem::RM_RefereeSystemSetOperateTpye(operate_type);
+            RM_RefereeSystem::RM_RefereeSystemSetColor(color);
+            RM_RefereeSystem::RM_RefereeSystemSetStringSize(18);
+            RM_RefereeSystem::RM_RefereeSystemSetWidth(3);
+            UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr(
+                const_cast<char *>(name), layer, const_cast<char *>(text), x, y));
+        }
+    }
 
     // 限制功率弧线：仅在目标值变化时刷新，减少无效发送。
     void darw_dynamic::setLimitPower()
@@ -44,6 +57,35 @@ namespace UI::Dynamic
         int8_t currentVision = (Gimbal_to_Chassis_Data.getVisionMode() > 0) ? 1 : 0;
         const uint32_t now_ms = HAL_GetTick();
         const bool heartbeat = (now_ms - last_refresh_ms) >= 1000;
+
+        if (currentFriction == lastFriction && currentVision == lastVision && !heartbeat) {
+            return;
+        }
+
+        if (heartbeat) {
+            QueueStatusText("mfr", 7, "FRI", 858, 160,
+                            currentFriction ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                            RM_RefereeSystem::OperateAdd);
+            QueueStatusText("mvs", 7, "VIS", 1008, 160,
+                            currentVision ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                            RM_RefereeSystem::OperateAdd);
+        } else {
+            if (currentFriction != lastFriction) {
+                QueueStatusText("mfr", 7, "FRI", 858, 160,
+                                currentFriction ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                                RM_RefereeSystem::OperateRevise);
+            }
+            if (currentVision != lastVision) {
+                QueueStatusText("mvs", 7, "VIS", 1008, 160,
+                                currentVision ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                                RM_RefereeSystem::OperateRevise);
+            }
+        }
+
+        lastFriction = currentFriction;
+        lastVision = currentVision;
+        last_refresh_ms = now_ms;
+        return;
 
         if (currentFriction != lastFriction || currentVision != lastVision || heartbeat) {
             // 自愈机制：若首次 Add 丢失，周期性 Add 可补建文本。
@@ -106,6 +148,44 @@ namespace UI::Dynamic
                 currentFol = 1;
             }
         }
+
+        if (currentNor == lastNor && currentFol == lastFol && currentRot == lastRot && !heartbeat) {
+            return;
+        }
+
+        if (heartbeat) {
+            QueueStatusText("mnr", 8, "NOR", 783, 100,
+                            currentNor ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                            RM_RefereeSystem::OperateAdd);
+            QueueStatusText("mrt", 8, "ROT", 933, 100,
+                            currentRot ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                            RM_RefereeSystem::OperateAdd);
+            QueueStatusText("mfl", 8, "FOL", 1083, 100,
+                            currentFol ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                            RM_RefereeSystem::OperateAdd);
+        } else {
+            if (currentNor != lastNor) {
+                QueueStatusText("mnr", 8, "NOR", 783, 100,
+                                currentNor ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                                RM_RefereeSystem::OperateRevise);
+            }
+            if (currentRot != lastRot) {
+                QueueStatusText("mrt", 8, "ROT", 933, 100,
+                                currentRot ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                                RM_RefereeSystem::OperateRevise);
+            }
+            if (currentFol != lastFol) {
+                QueueStatusText("mfl", 8, "FOL", 1083, 100,
+                                currentFol ? RM_RefereeSystem::ColorYellow : RM_RefereeSystem::ColorGreen,
+                                RM_RefereeSystem::OperateRevise);
+            }
+        }
+
+        lastNor = currentNor;
+        lastFol = currentFol;
+        lastRot = currentRot;
+        last_refresh_ms = now_ms;
+        return;
 
         if (currentNor != lastNor || currentFol != lastFol || currentRot != lastRot || heartbeat) {
             if (heartbeat) {

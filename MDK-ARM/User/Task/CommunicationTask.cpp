@@ -1,5 +1,6 @@
 #include "CommunicationTask.hpp"
 #include "../APP/Referee/RM_RefereeSystem.h"
+#include "can.h"
 #include "cmsis_os2.h"
 // #include "Variable.hpp"
 // #include "State.hpp"
@@ -16,14 +17,28 @@ int a=0;
 
 UI::Refresh::Probe UI::Refresh::g_probe = {};
 
+namespace
+{
+constexpr uint32_t kCan2NotifyMask = CAN_IT_RX_FIFO1_MSG_PENDING |
+                                     CAN_IT_RX_FIFO1_OVERRUN |
+                                     CAN_IT_BUSOFF |
+                                     CAN_IT_ERROR_WARNING |
+                                     CAN_IT_ERROR_PASSIVE |
+                                     CAN_IT_LAST_ERROR_CODE;
+}
+
 // 添加状态监视器，500ms超时
-BSP::WATCH_STATE::StateWatch state_watch_(500);
+BSP::WATCH_STATE::StateWatch state_watch_(800);
 void CommunicationTask(void *argument)
 {
 	osDelay(500);
     for (;;)
     {
-        Gimbal_to_Chassis_Data.Transmit();
+        Gimbal_to_Chassis_Data.PollLinkRecovery();
+        if (Gimbal_to_Chassis_Data.ShouldTransmit())
+        {
+            Gimbal_to_Chassis_Data.Transmit();
+        }
         osDelay(4);
     }
 }
@@ -33,13 +48,43 @@ namespace Communicat
 {
 void Gimbal_to_Chassis::Init()
 {
-    frame1_received = false;
-    frame2_received = false;
-    last_frame_time = HAL_GetTick();
+    ResetRxAssembly();
+    const uint32_t now = HAL_GetTick();
+    last_frame_time = now;
+    last_recovery_attempt_time = last_frame_time;
+    pending_can_error = 0;
+    last_can_error = 0;
+    recovery_count = 0;
+    allow_transmit = false;
     // 初始化状态监视器的时间戳，避免启动时误判为离线
     state_watch_.UpdateLastTime();
     state_watch_.UpdateTime();
+    state_watch_.CheckStatus();
 }
+void Gimbal_to_Chassis::ResetRxAssembly()
+{
+    frame1_received = false;
+    frame2_received = false;
+    std::memset(can_rx_buffer, 0, sizeof(can_rx_buffer));
+}
+
+void Gimbal_to_Chassis::NotifyCanError(uint32_t error)
+{
+    pending_can_error = error;
+    last_can_error = error;
+    allow_transmit = false;
+}
+
+bool Gimbal_to_Chassis::ShouldTransmit() const
+{
+    if (!allow_transmit || pending_can_error != 0U)
+    {
+        return false;
+    }
+
+    return (HAL_GetTick() - last_frame_time) < RECOVERY_TRIGGER_MS;
+}
+
 void Gimbal_to_Chassis::HandleCANMessage(uint32_t std_id, uint8_t* data)
 {
     ParseCANFrame(std_id, data);
@@ -48,6 +93,9 @@ void Gimbal_to_Chassis::HandleCANMessage(uint32_t std_id, uint8_t* data)
 void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
 {
     uint32_t current_time = HAL_GetTick();
+    if (current_time - last_frame_time > FRAME_TIMEOUT) {
+        ResetRxAssembly();
+    }
     
     // 检查超时，如果超时则重置接收状态
     // if (current_time - last_frame_time > FRAME_TIMEOUT) {
@@ -68,6 +116,14 @@ void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
         default:
             return;
     }
+    last_frame_time = current_time;
+    pending_can_error = 0;
+    allow_transmit = true;
+
+    // Refresh link liveness on every valid board-to-board CAN frame.
+    state_watch_.UpdateLastTime();
+    state_watch_.UpdateTime();
+    state_watch_.CheckStatus();
 
     
     // Only parse when both CAN frames are present; otherwise ui_list/chassis_mode
@@ -75,20 +131,15 @@ void Gimbal_to_Chassis::ParseCANFrame(uint32_t std_id, uint8_t* data)
     if (frame1_received && frame2_received) {
         ProcessReceivedData();
 
-        state_watch_.UpdateLastTime();
-        state_watch_.UpdateTime();
-        state_watch_.CheckStatus();
         // 重置接收状态
-        frame1_received = false;
-        frame2_received = false;
+        ResetRxAssembly();
     }
 }
 void Gimbal_to_Chassis::ProcessReceivedData()
 {
     const uint8_t EXPECTED_HEAD = 0xA5; // 根据发送端设置的头字节
-    const uint8_t EXPECTED_LEN = 1 + sizeof(Direction) + sizeof(ChassisMode) + sizeof(UiList);
-
     if (can_rx_buffer[0] != EXPECTED_HEAD) {
+        ResetRxAssembly();
         return;
     }
     auto ptr = can_rx_buffer + 1; // 跳过头字节
@@ -138,6 +189,63 @@ bool Gimbal_to_Chassis::isConnectOnline()
     state_watch_.UpdateTime();
     state_watch_.CheckStatus();
     return (state_watch_.GetStatus() == BSP::WATCH_STATE::Status::ONLINE);
+}
+
+void Gimbal_to_Chassis::PollLinkRecovery()
+{
+    const uint32_t now = HAL_GetTick();
+    const uint32_t time_since_last_frame = now - last_frame_time;
+    const uint32_t time_since_last_recovery = now - last_recovery_attempt_time;
+    const bool has_partial_packet = frame1_received || frame2_received;
+    const bool has_can_error = (pending_can_error != 0U);
+    const bool link_timed_out = (time_since_last_frame >= FRAME_TIMEOUT);
+    const bool partial_packet_stalled = has_partial_packet && (time_since_last_frame >= RECOVERY_TRIGGER_MS);
+
+    if (has_can_error || time_since_last_frame >= RECOVERY_TRIGGER_MS)
+    {
+        allow_transmit = false;
+    }
+
+    if (!has_can_error && !link_timed_out && !partial_packet_stalled)
+    {
+        return;
+    }
+
+    if (time_since_last_recovery < RECOVERY_RETRY_INTERVAL)
+    {
+        return;
+    }
+
+    RecoverCanReceiver();
+    last_recovery_attempt_time = now;
+}
+
+void Gimbal_to_Chassis::RecoverCanReceiver()
+{
+    ResetRxAssembly();
+    pending_can_error = 0;
+    recovery_count++;
+    allow_transmit = false;
+
+    CAN_FilterTypeDef filter = {};
+    filter.FilterActivation = CAN_FILTER_ENABLE;
+    filter.FilterBank = 14;
+    filter.FilterFIFOAssignment = CAN_FILTER_FIFO1;
+    filter.FilterIdHigh = 0x0;
+    filter.FilterIdLow = 0x0;
+    filter.FilterMaskIdHigh = 0x0;
+    filter.FilterMaskIdLow = 0x0;
+    filter.FilterMode = CAN_FILTERMODE_IDMASK;
+    filter.FilterScale = CAN_FILTERSCALE_32BIT;
+    filter.SlaveStartFilterBank = 14;
+
+    HAL_CAN_AbortTxRequest(&hcan2, CAN_TX_MAILBOX0 | CAN_TX_MAILBOX1 | CAN_TX_MAILBOX2);
+    HAL_CAN_DeactivateNotification(&hcan2, kCan2NotifyMask);
+    HAL_CAN_Stop(&hcan2);
+    HAL_CAN_ConfigFilter(&hcan2, &filter);
+    HAL_CAN_Start(&hcan2);
+    HAL_CAN_ActivateNotification(&hcan2, kCan2NotifyMask);
+    last_frame_time = HAL_GetTick();
 }
 
 void Gimbal_to_Chassis::Transmit()

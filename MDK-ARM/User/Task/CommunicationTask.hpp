@@ -95,11 +95,16 @@ class Gimbal_to_Chassis
     void Init();
     bool isConnectOnline();  // 添加声明
     void Transmit();
+    void PollLinkRecovery();
+    void NotifyCanError(uint32_t error);
+    bool ShouldTransmit() const;
 
   private:
     void ParseCANFrame(uint32_t std_id, uint8_t* data);
     void ProcessReceivedData();
     void SlidingWindowRecovery();
+    void RecoverCanReceiver();
+    void ResetRxAssembly();
 
     struct __attribute__((packed)) Direction // 方向结构体
     {
@@ -151,10 +156,17 @@ class Gimbal_to_Chassis
             // CAN接收缓冲区
     uint8_t can_rx_buffer[23]; // 24字节缓冲区用于重组数据
     bool frame1_received = false;
-    bool frame2_received = false; 
+    bool frame2_received = false;
     // 添加时间戳用于超时检测
     uint32_t last_frame_time = 0;
-    static constexpr uint32_t FRAME_TIMEOUT = 50; // 50ms超时
+    static constexpr uint32_t FRAME_TIMEOUT = 500; // 500ms超时
+    uint32_t last_recovery_attempt_time = 0;
+    static constexpr uint32_t RECOVERY_TRIGGER_MS = 120;
+    static constexpr uint32_t RECOVERY_RETRY_INTERVAL = 100;
+    uint32_t pending_can_error = 0;
+    uint32_t last_can_error = 0;
+    uint32_t recovery_count = 0;
+    bool allow_transmit = false;
     // CAN发送缓冲区
     uint8_t can_tx_buffer[3][8]; // 3帧，每帧8字节
 

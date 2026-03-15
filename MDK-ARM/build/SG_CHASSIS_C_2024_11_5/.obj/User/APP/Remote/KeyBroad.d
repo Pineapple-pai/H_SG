@@ -1,7 +1,6 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/APP/Remote/KeyBroad.o: \
   User\APP\Remote\KeyBroad.cpp User\APP\..\APP\Remote\KeyBroad.hpp \
-  User\APP\..\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp \
-  User\BSP\Key.hpp User\BSP\stdxxx.hpp \
+  User\APP\..\BSP\Remote\Dbus.hpp ..\Core\Inc\usart.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
@@ -27,5 +26,6 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\main.h User\APP\..\BSP\StaticTime.hpp \
+  User\APP\..\BSP\state_watch.hpp ..\Core\Inc\main.h \
+  User\APP\..\BSP\StaticTime.hpp \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h

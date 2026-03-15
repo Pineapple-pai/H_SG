@@ -2,9 +2,8 @@
   User\Task\EvenTask.cpp User\Task\EvenTask.hpp \
   User\Task\..\APP\Buzzer.hpp User\APP\..\BSP\stdxxx.hpp \
   User\APP\..\Task\EvenTask.hpp User\Task\..\APP\LED.hpp \
-  User\Task\..\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp \
-  User\BSP\Key.hpp User\BSP\stdxxx.hpp \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  User\Task\..\BSP\Remote\Dbus.hpp ..\Core\Inc\usart.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
@@ -29,15 +28,16 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\main.h User\Task\..\BSP\Init.hpp \
-  User\Task\..\Task\CommunicationTask.hpp \
+  User\APP\..\BSP\state_watch.hpp ..\Core\Inc\main.h \
+  User\Task\..\BSP\Init.hpp User\Task\..\Task\CommunicationTask.hpp \
   User\Task\..\BSP\StaticTime.hpp User\BSP\stdxxx.hpp \
   User\Task\..\BSP\SuperCap\SuperCap.hpp \
-  User\Task\..\BSP\SuperCap\..\Bsp_Can.hpp User\HAL\My_HAL.hpp \
-  User\BSP\Bsp_Can.hpp ..\Core\Inc\can.h ..\Core\Inc\main.h \
-  ..\Core\Inc\gpio.h User\HAL\HAL.hpp User\APP\..\BSP\StaticTime.hpp \
+  User\Task\..\BSP\SuperCap\..\Bsp_Can.hpp User\BSP\stdxxx.hpp \
+  ..\Core\Inc\can.h User\APP\..\HAL\CAN\can_hal.hpp \
+  User\APP\..\HAL\CAN\interface\can_bus.hpp \
+  User\APP\..\HAL\CAN\interface\can_device.hpp \
   User\Task\..\BSP\Power\PM01.hpp User\APP\..\Task\PowerTask.hpp \
-  User\Algorithm\RLS.hpp \
+  User\Task\..\Algorithm\RLS.hpp \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
   ..\Core\Inc\FreeRTOSConfig.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \
@@ -49,13 +49,22 @@
   ..\Drivers\CMSIS\Include\cmsis_compiler.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
-  User\APP\Variable.hpp User\APP\Dji_Motor.hpp User\BSP\BSP_Motor.hpp \
-  User\BSP\StaticTime.hpp User\HAL\My_hal.hpp User\Algorithm\PID.hpp \
-  User\Algorithm\Wheel.hpp User\APP\Dm_Motor.hpp User\APP\State.hpp \
-  User\APP\Tools.hpp User\Task\PowerTask.hpp User\Task\EvenTask.hpp \
-  User\APP\PowerMeter.hpp User\Algorithm\alg_slope.h \
-  User\Algorithm\drv_math.h User\APP\..\APP\Referee\RM_RefereeSystem.h \
+  User\Task\..\APP\Variable.hpp User\APP\..\BSP\Motor\Dji\DjiMotor.hpp \
+  User\APP\..\BSP\Motor\MotorBase.hpp \
+  User\APP\..\BSP\Motor\Lk\Lk_motor.hpp User\APP\..\Algorithm\PID.hpp \
+  User\APP\..\Algorithm\Wheel.hpp User\APP\..\APP\State.hpp \
+  User\APP\..\APP\Tools.hpp User\APP\..\Task\PowerTask.hpp \
+  User\APP\..\APP\PowerMeter.hpp User\BSP\BSP_Motor.hpp \
+  User\BSP\StaticTime.hpp User\APP\..\HAL\CAN\can_hal.hpp \
+  User\APP\..\BSP\state_watch.hpp User\APP\..\Algorithm\alg_slope.h \
+  User\Algorithm\drv_math.h User\APP\..\BSP\StaticTime.hpp \
+  User\APP\..\APP\Referee\RM_RefereeSystem.h \
   User\APP\..\APP\Referee\..\Referee\RM_RefereeSystemCRC.h \
   User\APP\..\BSP\stdxxx.hpp User\APP\..\Task\CommunicationTask.hpp \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\Core\Inc\tim.h
+  ..\Core\Inc\tim.h User\Task\..\BSP\state_watch.hpp \
+  User\Task\..\BSP\Motor\Lk\Lk_motor.hpp \
+  User\Task\..\BSP\Motor\Dji\DjiMotor.hpp \
+  User\Task\..\BSP\Common\StateWatch\buzzer_manager.hpp \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h

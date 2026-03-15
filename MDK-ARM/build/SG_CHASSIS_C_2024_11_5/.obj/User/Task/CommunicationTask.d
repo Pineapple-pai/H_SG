@@ -1,8 +1,7 @@
 ./build/SG_CHASSIS_C_2024_11_5/.obj/User/Task/CommunicationTask.o: \
   User\Task\CommunicationTask.cpp User\Task\CommunicationTask.hpp \
-  User\Task\..\BSP\Dbus.hpp User\BSP\..\BSP\StaticTime.hpp \
-  User\BSP\Key.hpp User\BSP\stdxxx.hpp \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  User\Task\..\BSP\Remote\Dbus.hpp ..\Core\Inc\usart.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
@@ -27,10 +26,16 @@
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\main.h User\Task\..\BSP\StaticTime.hpp \
-  User\Task\EvenTask.hpp User\BSP\stdxxx.hpp \
-  User\Task\..\APP\Referee\RM_RefereeSystem.h \
+  User\APP\..\BSP\state_watch.hpp ..\Core\Inc\main.h \
+  User\Task\..\BSP\StaticTime.hpp User\Task\EvenTask.hpp \
+  User\BSP\stdxxx.hpp User\Task\..\APP\Referee\RM_RefereeSystem.h \
   User\Task\..\APP\Referee\..\Referee\RM_RefereeSystemCRC.h \
   User\APP\..\BSP\stdxxx.hpp \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\Core\Inc\tim.h
+  ..\Core\Inc\tim.h User\Task\..\HAL\UART\uart_hal.hpp \
+  User\Task\..\HAL\UART\interface\uart_bus.hpp \
+  User\Task\..\HAL\UART\interface\uart_device.hpp \
+  User\Task\..\BSP\state_watch.hpp User\Task\..\HAL\CAN\can_hal.hpp \
+  User\Task\..\HAL\CAN\interface\can_bus.hpp \
+  User\Task\..\HAL\CAN\interface\can_device.hpp ..\Core\Inc\can.h \
+  User\Task\..\APP\UI\UI_RefreshBridge.hpp

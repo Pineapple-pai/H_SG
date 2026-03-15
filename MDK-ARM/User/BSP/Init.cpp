@@ -23,10 +23,10 @@ void Init()
     //auto& can2 = HAL::CAN::get_can_bus_instance().get_can2();
 	//BSP::Motor::Dji::Motor3508.registerCallback(&can2);
     
-    for(uint8_t i = 0; i < 4; i++)
-    {
-        BSP::Motor::LK::Motor4005.setAllowAccumulate(i + 1, true);
-    }
+    // for(uint8_t i = 0; i < 4; i++)
+    // {
+    //     BSP::Motor::LK::Motor4005.setAllowAccumulate(i + 1, true);
+    // }
 	//BSP::Motor::LK::Motor4005.registerCallback(&can1);
 
     auto& uart3 = HAL::UART::get_uart_bus_instance().get_device(HAL::UART::UartDeviceId::HAL_Uart3);
