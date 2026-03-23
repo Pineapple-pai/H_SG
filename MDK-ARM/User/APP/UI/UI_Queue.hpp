@@ -61,12 +61,31 @@ public:
     uint32_t last_delete_send_tick = 0;
 
 public:
+    static bool same_graphic_name(const RM_RefereeSystem::graphic_data_struct_t& lhs,
+                                  const RM_RefereeSystem::graphic_data_struct_t& rhs) {
+        return std::memcmp(lhs.graphic_name, rhs.graphic_name, sizeof(lhs.graphic_name)) == 0;
+    }
+
+    static bool same_string_name(const RM_RefereeSystem::ext_client_custom_character_t& lhs,
+                                 const RM_RefereeSystem::ext_client_custom_character_t& rhs) {
+        return std::memcmp(lhs.grapic_data_struct.graphic_name,
+                           rhs.grapic_data_struct.graphic_name,
+                           sizeof(lhs.grapic_data_struct.graphic_name)) == 0;
+    }
+
     bool referee_id_ready() const {
         return (ext_power_heat_data_0x0201.robot_id != 0) &&
                (RM_RefereeSystem::RM_RefereeSystemGetRobotId() != 0);
     }
 
     void add(RM_RefereeSystem::graphic_data_struct_t graphic_data_struct_temp) {
+        for (uint16_t i = 0; i < size; i++) {
+            if (same_graphic_name(graphic_data_struct[i], graphic_data_struct_temp)) {
+                std::memcpy(&graphic_data_struct[i], &graphic_data_struct_temp,
+                            sizeof(RM_RefereeSystem::graphic_data_struct_t));
+                return;
+            }
+        }
         if (size >= (kGraphicCapacity - 1)) {
             return;
         }
@@ -76,6 +95,13 @@ public:
     }
 
     void add_wz(RM_RefereeSystem::ext_client_custom_character_t ext_client_custom_character_temp) {
+        for (uint16_t i = 0; i < wz_size; i++) {
+            if (same_string_name(ext_client_custom_character[i], ext_client_custom_character_temp)) {
+                std::memcpy(&ext_client_custom_character[i], &ext_client_custom_character_temp,
+                            sizeof(RM_RefereeSystem::ext_client_custom_character_t));
+                return;
+            }
+        }
         if (wz_size >= (kStringCapacity - 1)) {
             return;
         }

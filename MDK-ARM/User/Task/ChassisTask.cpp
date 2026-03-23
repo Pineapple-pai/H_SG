@@ -26,8 +26,8 @@ TaskManager taskManager;
 float Wheel_Azimuth[4] = {5 * My_PI / 4, 7 * My_PI / 4, My_PI / 4, 3 * My_PI / 4};
 
 // 四个舵轮零位标定值，直接保留成当前实测数值。
-float phase[4] = {4.11346f - p4, 0.400368f - p3, 3.97368f - p4,1.69533f + p4};
-
+float phase[4] = {1.645865 - p4, 4.333016 - p3, 1.252015 + p3 , 1.427656 + p4};
+//1.645865  4.333016 1.252015  1.427656
 void ChassisTask(void *argument)
 {
     osDelay(500);
@@ -124,7 +124,7 @@ class Chassis_Task::UniversalHandler : public StateHandler
         const float cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
         const float sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
 
-        UpdateFilteredTargets(TAR_LX * 660.0f, TAR_LY * 660.0f, TAR_VW * 330.0f);
+        UpdateFilteredTargets(TAR_LX * 880.0f, TAR_LY * 880.0f, TAR_VW * 550.0f);
 
         const float vx_slope = ApplySlope(slope_vx, tar_vx.x1, Chassis_Data.vx);
         const float vy_slope = ApplySlope(slope_vy, tar_vy.x1, Chassis_Data.vy);
@@ -176,7 +176,7 @@ class Chassis_Task::FollowHandler : public StateHandler
         const float sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
         const float vw_target = (yaw_err == 0.0f) ? 0.0f : pid_vw.GetCout();
 
-        UpdateFilteredTargets(TAR_LX * 660.0f, TAR_LY * 660.0f, vw_target);
+        UpdateFilteredTargets(TAR_LX * 880.0f, TAR_LY * 880.0f, vw_target);
 
         const float vx_slope = tar_vx.x1;
         const float vy_slope = tar_vy.x1;
@@ -221,7 +221,7 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
         const float cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
         const float sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
 
-        UpdateFilteredTargets(TAR_LX * 440.0f, TAR_LY * 440.0f, 0.0f);
+        UpdateFilteredTargets(TAR_LX * 660.0f, TAR_LY * 660.0f, 0.0f);
 
         const uint8_t rotating_vel_raw = Gimbal_to_Chassis_Data.getRotatingVel();
         float keyboard_vw_input = 0.0f;
@@ -256,18 +256,6 @@ class Chassis_Task::KeyBoardHandler : public StateHandler
                 pid_vw.GetPidPos(Kpid_vw, 0, yaw_err, 10000);
                 vw_target = pid_vw.GetCout();
             }
-        }
-
-        if (Gimbal_to_Chassis_Data.getShitf())
-        {
-            Chassis_Data.now_power = 30.0f + ext_power_heat_data_0x0201.chassis_power_limit;
-        }
-        else
-        {
-            Chassis_Data.now_power = Tools.clamp(
-                ext_power_heat_data_0x0201.chassis_power_limit + Gimbal_to_Chassis_Data.getPower(),
-                120.0f,
-                20) - 5;
         }
 
         const float vx_slope = ApplySlope(slope_vx, tar_vx.x1, Chassis_Data.vx);
@@ -306,7 +294,7 @@ class Chassis_Task::RotatingHandler : public StateHandler
         const float cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
         const float sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
 
-        UpdateFilteredTargets(TAR_LX * 660.0f, TAR_LY * 660.0f, TAR_VW * 330.0f);
+        UpdateFilteredTargets(TAR_LX * 880.0f, TAR_LY * 880.0f, TAR_VW * 550.0f);
 
         const float vx_slope = ApplySlope(slope_vx, tar_vx.x1, slope_vx.Get_Out());
         const float vy_slope = ApplySlope(slope_vy, tar_vy.x1, slope_vy.Get_Out());
@@ -449,7 +437,7 @@ void Chassis_Task::updateState()
 // Stop 模式下直接把当前输入写回目标，避免上一次模式残留。
 void Chassis_Task::Tar_Updata()
 {
-    UpdateFilteredTargets(TAR_LX * 660.0f, TAR_LY * 660.0f, TAR_VW * 330.0f);
+    UpdateFilteredTargets(TAR_LX * 880.0f, TAR_LY * 880.0f, TAR_VW * 550.0f);
 
     Chassis_Data.vx = tar_vx.x1;
     Chassis_Data.vy = tar_vy.x1;
@@ -477,8 +465,8 @@ void Chassis_Task::Wheel_UpData()
         Chassis_Data.vy / 660.0f,
         Chassis_Data.vw / 660.0f,
         0.0f,
-        15.0f,
-        25.0f);
+        25.0f,
+        35.0f);
 
     for (int i = 0; i < 4; i++)
     {
@@ -600,7 +588,7 @@ void Chassis_Task::CAN_Send()
         for (int i = 0; i < 4; i++)
         {
             Chassis_Data.final_4005_Out[i] = pid_vel_String[i].GetCout();
-            iq_control[i] = Tools.clamp((int16_t)Chassis_Data.final_4005_Out[i], 150, -150);
+            iq_control[i] = Tools.clamp((int16_t)Chassis_Data.final_4005_Out[i], 200, -200);
         }
         BSP::Motor::LK::Motor4005.ctrl_Multi(iq_control);
     }
@@ -614,11 +602,11 @@ void Chassis_Task::CAN_Send()
     Send_ms++;
     Send_ms %= 2;
 
-    Tools.vofaSend(
-        BSP::Motor::LK::Motor4005.getTorque(1),
-        BSP::Motor::LK::Motor4005.getTorque(2),
-        BSP::Motor::LK::Motor4005.getTorque(3),
-        BSP::Motor::LK::Motor4005.getTorque(4),
-        0,
-        0);
+    // Tools.vofaSend(
+    //     BSP::Motor::LK::Motor4005.getTorque(1),
+    //     BSP::Motor::LK::Motor4005.getTorque(2),
+    //     BSP::Motor::LK::Motor4005.getTorque(3),
+    //     BSP::Motor::LK::Motor4005.getTorque(4),
+    //     0,
+    //     0);
 }

@@ -4,6 +4,7 @@
 #include "../Task/CommunicationTask.hpp"
 #include "../APP/Tools.hpp"
 #include "../APP/Variable.hpp"
+#include "../APP/Referee/RM_RefereeSystem.h"
 #include "../BSP/Motor/Lk/Lk_motor.hpp"
 #include "../BSP/Motor/Dji/DjiMotor.hpp"
 #include "cmsis_os2.h"
@@ -37,16 +38,33 @@ void RLSTask(void *argument)
     PowerControl.InitMotorInterfaces(BSP::Motor::Dji::Motor3508, BSP::Motor::LK::Motor4005);
 
     const float dt = 0.001f;
+    float last_online_referee_power_limit = test_max;
+    float last_online_buffer_energy = 0.0f;
+    bool has_online_referee_snapshot = false;
 
     for (;;)
     {
-        const float referee_power_limit =
-            (ext_power_heat_data_0x0201.chassis_power_limit > 0U) ? static_cast<float>(ext_power_heat_data_0x0201.chassis_power_limit) : test_max;
+        const bool referee_online = RM_RefereeSystem::RM_RefereeSystemOnline();
+        const float raw_referee_power_limit = static_cast<float>(ext_power_heat_data_0x0201.chassis_power_limit);
         const float buffer_energy = static_cast<float>(ext_power_heat_data_0x0202.chassis_power_buffer);
+        if (referee_online && raw_referee_power_limit > 0.0f)
+        {
+            last_online_referee_power_limit = raw_referee_power_limit;
+            last_online_buffer_energy = buffer_energy;
+            has_online_referee_snapshot = true;
+        }
+
+        const float supercap_referee_power_limit = referee_online
+                                                       ? ((raw_referee_power_limit > 0.0f) ? raw_referee_power_limit : test_max)
+                                                       : (has_online_referee_snapshot ? last_online_referee_power_limit : test_max);
+        const float control_referee_power_limit = supercap_referee_power_limit;
+        const float trusted_buffer_energy = referee_online
+                                                ? buffer_energy
+                                                : (has_online_referee_snapshot ? last_online_buffer_energy : 0.0f);
         const bool supercap_online = BSP::SuperCap::cap.isScOnline();
         const float cap_energy = BSP::SuperCap::cap.getCurrentEnergy();
         const bool use_buffer_feedback = (!supercap_online) || (cap_energy <= 1.0f);
-        const float energy_feedback = use_buffer_feedback ? buffer_energy : cap_energy;
+        const float energy_feedback = use_buffer_feedback ? trusted_buffer_energy : cap_energy;
 
         const bool burst_requested = Gimbal_to_Chassis_Data.getShitf();
         const bool charge_requested = (Gimbal_to_Chassis_Data.getPower() <= kChargeRequestThreshold);
@@ -55,7 +73,7 @@ void RLSTask(void *argument)
         PowerControl.String_PowerData.burst_extra_request = 0.0f;
 
         EnergyMode energy_mode = EnergyMode::Cruise;
-        if (burst_requested)
+        if (allow_supercap_burst)
         {
             energy_mode = EnergyMode::Burst;
         }
@@ -69,35 +87,42 @@ void RLSTask(void *argument)
             }
         }
 
-        PowerControl.Wheel_PowerData.MAXPower = referee_power_limit;
-        PowerControl.String_PowerData.MAXPower = referee_power_limit * 0.5f;
+        PowerControl.Wheel_PowerData.MAXPower = control_referee_power_limit;
+        PowerControl.String_PowerData.MAXPower = control_referee_power_limit * 0.5f;
 
         PowerControl.Wheel_PowerData.UpRLS(pid_vel_Wheel, toque_const_3508, rpm_to_rads_3508);
         PowerControl.String_PowerData.UpRLS(pid_vel_String, toque_const_4005, rpm_to_rads_4005);
 
-        PowerControl.Wheel_PowerData.EnergyLoopUpdate(energy_feedback, referee_power_limit, dt, energy_mode, use_buffer_feedback);
-        PowerControl.String_PowerData.MAXPower = referee_power_limit * 0.5f;
+        PowerControl.Wheel_PowerData.EnergyLoopUpdate(energy_feedback, control_referee_power_limit, dt, energy_mode, use_buffer_feedback);
+        PowerControl.String_PowerData.MAXPower = control_referee_power_limit * 0.5f;
 
-        PowerControl.EnergyDebug.referee_power_limit = referee_power_limit;
+        PowerControl.EnergyDebug.referee_power_limit = control_referee_power_limit;
         PowerControl.EnergyDebug.cap_energy = energy_feedback;
         PowerControl.EnergyDebug.abundance_output = PowerControl.Wheel_PowerData.abundance_output;
         PowerControl.EnergyDebug.poverty_output = PowerControl.Wheel_PowerData.poverty_output;
         PowerControl.EnergyDebug.wheel_power_limit = PowerControl.Wheel_PowerData.MAXPower;
         PowerControl.EnergyDebug.mode = static_cast<uint8_t>(energy_mode);
 
-        BSP::SuperCap::cap.setRatedPower(referee_power_limit);
-        BSP::SuperCap::cap.SetBufferEnergy(buffer_energy);
+        BSP::SuperCap::cap.SetRefereeStrategyOnline(referee_online || has_online_referee_snapshot);
+        BSP::SuperCap::cap.setRatedPower(supercap_referee_power_limit);
+        BSP::SuperCap::cap.SetBufferEnergy(trusted_buffer_energy);
         BSP::SuperCap::cap.SetInstruction(0U);
 
-        const float abundance_line = use_buffer_feedback ? PowerControl.Wheel_PowerData.buffer_abundance_line
-                                                         : PowerControl.Wheel_PowerData.abundance_line;
-        const float poverty_line = use_buffer_feedback ? PowerControl.Wheel_PowerData.buffer_poverty_line
-                                                       : PowerControl.Wheel_PowerData.poverty_line;
-        const float chassis_power = BSP::SuperCap::cap.getOutPower();
+        const float actual_chassis_power = ext_power_heat_data_0x0202.chassis_power;
         const float supercap_energy = energy_feedback;
         const float dynamic_max_power = PowerControl.Wheel_PowerData.MAXPower;
+        const float supercap_out_power = BSP::SuperCap::cap.getOutPower();
+        const float energy_mode_value = static_cast<float>(energy_mode);
 
 //        调试时可在此处发送功率与能量曲线到 VOFA
+
+        Tools.vofaSend(
+            control_referee_power_limit,
+            actual_chassis_power,
+            supercap_energy,
+            dynamic_max_power,
+            supercap_out_power,
+            energy_mode_value);
 
         osDelay(1);
     }

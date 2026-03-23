@@ -257,10 +257,11 @@ void Gimbal_to_Chassis::Transmit()
     setNowBoosterHeat(ext_power_heat_data_0x0202.shooter_id1_17mm_cooling_heat);
     setBoosterMAX(ext_power_heat_data_0x0201.shooter_barrel_heat_limit);
     setBoosterCd(ext_power_heat_data_0x0201.shooter_barrel_cooling_value);
+    setLaunchSpeed(ext_shoot_data_0x0207.initial_speed);
 
     // 使用临时指针将数据拷贝到缓冲区
-    uint8_t tx_data[8];
-    auto temp_ptr = tx_data;
+    uint8_t tx_payload[sizeof(booster)] = {0};
+    auto temp_ptr = tx_payload;
 
     const auto memcpy_safe = [&](const auto &data) {
         std::memcpy(temp_ptr, &data, sizeof(data));
@@ -271,15 +272,24 @@ void Gimbal_to_Chassis::Transmit()
     memcpy_safe(booster.booster_heat_cd);  
     memcpy_safe(booster.booster_heat_max);  
     memcpy_safe(booster.booster_now_heat);  
-    HAL::CAN::Frame frame;
-    frame.dlc = 8;
-    frame.is_extended_id = false;
-    frame.is_remote_frame = false;
-    frame.id = CAN_CHASSIS_TO_GIMBAL_ID;  // 0x501
-    std::memcpy(frame.data, tx_data, 8);
+    memcpy_safe(booster.launch_speed);
+    HAL::CAN::Frame frame1 = {};
+    frame1.dlc = 8;
+    frame1.is_extended_id = false;
+    frame1.is_remote_frame = false;
+    frame1.id = CAN_C2G_FRAME1_ID;
+    std::memcpy(frame1.data, tx_payload, frame1.dlc);
+
+    HAL::CAN::Frame frame2 = {};
+    frame2.dlc = 8;
+    frame2.is_extended_id = false;
+    frame2.is_remote_frame = false;
+    frame2.id = CAN_C2G_FRAME2_ID;
+    std::memcpy(frame2.data, tx_payload + 8, sizeof(tx_payload) - 8);
 
     auto& can2 = HAL::CAN::get_can_bus_instance().get_device(HAL::CAN::CanDeviceId::HAL_Can2);
-    can2.send(frame);
+    can2.send(frame1);
+    can2.send(frame2);
 
 }
 

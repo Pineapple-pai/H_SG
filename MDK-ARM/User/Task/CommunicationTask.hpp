@@ -56,7 +56,8 @@
 // CAN通信相关定义
 // ============================================
 // 底盘发送ID（底盘->云台）
-#define CAN_CHASSIS_TO_GIMBAL_ID 0x207       // 底盘->云台（单帧发送裁判系统数据）
+#define CAN_C2G_FRAME1_ID 0x207              // 底盘->云台第一帧
+#define CAN_C2G_FRAME2_ID 0x208              // 底盘->云台第二帧
 
 // 底盘接收ID（云台->底盘，与云台发送ID对应）
 #define CAN_G2C_FRAME1_ID 0x205              // 第一帧ID（云台发送）
@@ -64,6 +65,10 @@
 // ============================================
 
 //#endif
+
+#ifndef CAN_C2G_FRAME2_ID
+#define CAN_C2G_FRAME2_ID 0x208
+#endif
 
 class Communicat_Data
 {
@@ -147,6 +152,7 @@ class Gimbal_to_Chassis
         uint16_t booster_heat_cd;
         uint16_t booster_heat_max;
         uint16_t booster_now_heat;
+        float launch_speed;
     };
 		struct __attribute__((packed)) IMU //IMU数据
 		{
@@ -247,9 +253,14 @@ class Gimbal_to_Chassis
         return direction.Power;
     }
 
-    bool getF5()
+    bool getCtrl()
     {
         return ui_list.UI_F5;
+    }
+
+    bool getF5()
+    {
+        return getCtrl();
     }
 
     inline uint8_t getVisionMode()
@@ -290,14 +301,18 @@ class Gimbal_to_Chassis
     {
         booster.booster_heat_cd = booster_cd;
     }
-		float getYaw()
-		{
-			return imu.yaw;
-		}
-		float getPitch()
-		{
-			return imu.pitch;
-		}
+    void setLaunchSpeed(float launch_speed)
+    {
+        booster.launch_speed = launch_speed;
+    }
+    float getYaw()
+    {
+        return imu.yaw;
+    }
+    float getPitch()
+    {
+        return imu.pitch;
+    }
             // 新增CAN数据处理方法
     void HandleCANMessage(uint32_t std_id, uint8_t* data);
 };

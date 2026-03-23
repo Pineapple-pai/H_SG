@@ -220,26 +220,26 @@ namespace SGPowerControl
         void SetDefaultConfig()
         {
             Wheel_PowerData.MAXPower = 40.0f;
-            Wheel_PowerData.k1 = 4.2f;
-            Wheel_PowerData.k2 = 1.5f;
+            Wheel_PowerData.k1 = 3.0f;
+            Wheel_PowerData.k2 = 1.1f;
             Wheel_PowerData.k3 = 4.0f;
             Wheel_PowerData.is_RLS = false;
             Wheel_PowerData.E_upper = 1000.0f;
             Wheel_PowerData.E_lower = 500.0f;
             Wheel_PowerData.ConfigureEnergyPid(4.0f, 0.0f, 6.0f, 0.0f);
-            Wheel_PowerData.SetEnergyCapacity(1250.0f, 0.8f);
-            Wheel_PowerData.SetEnergyTargets(250.0f, 30.0f);
+            Wheel_PowerData.SetEnergyCapacity(1400.0f, 0.8f);
+            Wheel_PowerData.SetEnergyTargets(350.0f, 30.0f);
 
             String_PowerData.MAXPower = 40.0f * 0.5f;
-            String_PowerData.k1 = 9.0f;
-            String_PowerData.k2 = 2.8f;
+            String_PowerData.k1 = 6.0f;
+            String_PowerData.k2 = 2.5f;
             String_PowerData.k3 = 5.0f;
             String_PowerData.is_RLS = false;
             String_PowerData.E_upper = 500.0f;
             String_PowerData.E_lower = 100.0f;
             String_PowerData.ConfigureEnergyPid(4.0f, 0.0f, 6.0f, 0.0f);
-            String_PowerData.SetEnergyCapacity(1250.0f, 0.8f);
-            String_PowerData.SetEnergyTargets(250.0f, 30.0f);
+            String_PowerData.SetEnergyCapacity(1400.0f, 0.8f);
+            String_PowerData.SetEnergyTargets(350.0f, 30.0f);
         }
 
         void InitMotorInterfaces(BSP::Motor::Dji::GM3508<4>& wheel_motor,

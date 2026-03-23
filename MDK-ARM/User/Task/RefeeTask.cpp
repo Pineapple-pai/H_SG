@@ -10,14 +10,14 @@ void RefeeTask(void *argument)
 {
     UI::Static::UI_static.Init();
     bool last_ref_ready = false;
-    bool last_f5 = false;
+    bool last_ctrl = false;
     uint32_t last_periodic_rebuild_ms = HAL_GetTick();
 
     for (;;)
     {
         const uint32_t now_ms = HAL_GetTick();
         const bool ref_ready = UI::UI_send_queue.referee_id_ready();
-        const bool f5_now = Gimbal_to_Chassis_Data.getF5();
+        const bool ctrl_now = Gimbal_to_Chassis_Data.getCtrl();
 
         bool request_hard_rebuild = false;
         bool request_soft_rebuild = false;
@@ -25,8 +25,8 @@ void RefeeTask(void *argument)
         if (ref_ready && !last_ref_ready) {
             request_hard_rebuild = true;
         }
-        // 全局 F5 上升沿触发硬重建（不依赖底盘模式）。
-        if (f5_now && !last_f5) {
+        // 全局 Ctrl 上升沿触发硬重建（不依赖底盘模式）。
+        if (ctrl_now && !last_ctrl) {
             request_hard_rebuild = true;
         }
         // 周期性自愈：客户端重启会清空 UI，目标端没有显式回调。
@@ -50,7 +50,7 @@ void RefeeTask(void *argument)
         }
 
         last_ref_ready = ref_ready;
-        last_f5 = f5_now;
+        last_ctrl = ctrl_now;
 
         UI::Dynamic::UI_dynamic.darw_UI();
         UI::UI_send_queue.send_wz();

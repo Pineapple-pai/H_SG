@@ -72,6 +72,11 @@ class LH_Cap
         BufferEnergy_ = buffer_energy;
     }
 
+    void SetRefereeStrategyOnline(bool online)
+    {
+        RefereeStrategyOnline_ = online;
+    }
+
     void sendCAN()
     {
         uint8_t send_data[8] = {0};
@@ -84,7 +89,7 @@ class LH_Cap
         send_data[3] = (energy_int >> 8) & 0xFF;
         send_data[4] = (energy_int & 0xFF);
         send_data[5] = (isScOnline() ? 1U : 0U);
-        send_data[6] = (RM_RefereeSystem::RM_RefereeSystemOnline() ? 1U : 0U);
+        send_data[6] = (RefereeStrategyOnline_ ? 1U : 0U);
         send_data[7] = 0U;
 
         HAL::CAN::Frame frame{};
@@ -151,6 +156,7 @@ class LH_Cap
     uint8_t Instruction_ = 0;   // 超电指令 0:开启 1:关闭
     float BufferEnergy_ = 0.0f; // 缓冲能量
 
+    bool RefereeStrategyOnline_ = false;
     float Power_10times_ = 0.0f;
     float CurrentEnergy_ = 0.0f;
     float OutPower_ = 0.0f;

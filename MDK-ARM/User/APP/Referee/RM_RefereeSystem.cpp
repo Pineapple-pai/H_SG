@@ -21,6 +21,8 @@ RM_RefereeSystemData_t RM_RefereeSystemData = {0};
 RM_RefereeSystemData_t RM_RefereeSystemData01 = {0};
 // 0x0201 机器人状态数�?
 ext_game_robot_status_t ext_power_heat_data_0x0201 = {0};
+// 0x207 机器人发射机构
+ext_shoot_data_t ext_shoot_data_0x0207 = {0};
 // 0x0202 实时功率热量数据
 ext_power_heat_data_t ext_power_heat_data_0x0202 = {0};
 // 0x0303 机器人间交互数据
@@ -461,6 +463,14 @@ void RM_RefereeSystemParseData(uint8_t *RM_pDatas, int size)
     if (!Verify_CRC8_Check_Sum(RM_pDatas, CRC8LEN) ||
         !Verify_CRC16_Check_Sum(RM_pDatas, CRC16LEN(RM_RefereeSystemData.data_length)))
         return;
+
+    // The active receive path uses DMA idle + RM_RefereeSystemGetData(),
+    // so online state must be refreshed here after a valid referee frame
+    // is parsed instead of relying on the legacy byte-IT parser wrapper.
+    state_watch.UpdateLastTime();
+    state_watch.UpdateTime();
+    state_watch.CheckStatus();
+
     switch (RM_RefereeSystemData.cmd_id)
     {
     case 0x0201:
@@ -468,6 +478,9 @@ void RM_RefereeSystemParseData(uint8_t *RM_pDatas, int size)
         break;
     case 0x0202:
         memcpy(&ext_power_heat_data_0x0202, (void *)RM_RefereeSystemData.data, sizeof(ext_power_heat_data_0x0202));
+        break;
+    case 0x0207:
+        memcpy(&ext_shoot_data_0x0207, (void *)RM_RefereeSystemData.data, sizeof(ext_shoot_data_0x0207));
         break;
     case 0x0303:
         memcpy(&map_command_0x0303, (void *)RM_RefereeSystemData.data, sizeof(map_command_0x0303));

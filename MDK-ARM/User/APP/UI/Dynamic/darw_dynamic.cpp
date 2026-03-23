@@ -28,21 +28,53 @@ namespace UI::Dynamic
             UI_send_queue.add_wz(RM_RefereeSystem::RM_RefereeSystemSetStr(
                 const_cast<char *>(name), layer, const_cast<char *>(text), x, y));
         }
+
+        float GetDisplayedChassisPower()
+        {
+            if (BSP::Power::pm01.isPmOnline()) {
+                return BSP::Power::pm01.cin_power;
+            }
+            if (RM_RefereeSystem::RM_RefereeSystemOnline()) {
+                return ext_power_heat_data_0x0202.chassis_power;
+            }
+            return 0.0f;
+        }
+
+        uint16_t GetDisplayedSuperCapSpan()
+        {
+            float super_cap_span = 0.0f;
+            if (BSP::SuperCap::cap.isScOnline()) {
+                super_cap_span = BSP::SuperCap::cap.getCurrentEnergy() * (39.0f / 100.0f);
+            } else if (BSP::Power::pm01.isPmOnline()) {
+                super_cap_span = (BSP::Power::pm01.cout_voltage - 12.0f) * 3.3f;
+            }
+
+            super_cap_span = Tools.clamp(super_cap_span, 39.0f, 1.0f);
+            return static_cast<uint16_t>(super_cap_span);
+        }
+
+        int16_t RoundDisplayValue(float value)
+        {
+            return static_cast<int16_t>(value >= 0.0f ? (value + 0.5f) : (value - 0.5f));
+        }
     }
 
     // 限制功率弧线：仅在目标值变化时刷新，减少无效发送。
     void darw_dynamic::setLimitPower()
     {
         static int16_t lastvalue = 0;
+        static uint32_t last_send_ms = 0;
 
         float limit_power_raw = PowerControl.getMAXPower();
         limit_power_raw       = Tools.clamp(limit_power_raw, 120.0f, 0.0f);
         int16_t limit_power   = static_cast<int16_t>(130.0f - limit_power_raw * (80.0f / 120.0f));
-        if (limit_power != lastvalue) {
+        const uint32_t now_ms = HAL_GetTick();
+        if (limit_power != lastvalue || (now_ms - last_send_ms) >= 500U) {
             RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorRedAndBlue);
             RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("lmp", 1, limit_power, limit_power + 2, 960, 540, 380, 380));
             lastvalue = limit_power;
+            last_send_ms = now_ms;
         }
     }
     // 状态栏 FRI/VIS 文本刷新。
@@ -228,25 +260,20 @@ namespace UI::Dynamic
     // 超电弧线：按电压刷新显示长度。
     void darw_dynamic::curPower()
     {
-        uint16_t super_cap = (BSP::Power::pm01.cout_voltage - 12) * 3.3;
+        const uint16_t super_cap = GetDisplayedSuperCapSpan();
         static uint16_t lastvalue = 0;
         static uint32_t last_send_ms = 0;
 
         // 超电弧线固定使用绿色显示。
         RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
 
-        //        if (super_cap != lastvalue) {
-
-        super_cap = Tools.clamp(super_cap, 39, 1);
-
         const uint32_t now_ms = HAL_GetTick();
-        if (super_cap != lastvalue || (now_ms - last_send_ms) >= 500) {
+        if (super_cap != lastvalue || (now_ms - last_send_ms) >= 500U) {
             RM_RefereeSystem::RM_RefereeSystemSetWidth(15);
             UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("scp", 3, 271, 271 + super_cap, 960, 540, 380, 380));
             lastvalue = super_cap;
             last_send_ms = now_ms;
         }
-        //        }
     }
     // 视觉自瞄点：
     // 当前协议中 AimX 需要先减 140 偏置，140 对应屏幕中心（960）。
@@ -315,21 +342,35 @@ namespace UI::Dynamic
 
 
             // 功率弧线：0~120W 映射到 130~50 度区间。
-            float power_raw = BSP::Power::pm01.cin_power;
+            const uint32_t now_ms = HAL_GetTick();
+            float power_raw = GetDisplayedChassisPower();
             power_raw       = Tools.clamp(power_raw, 120.0f, 0.0f);
             int16_t power   = static_cast<int16_t>(130.0f - power_raw * (80.0f / 120.0f));
             static int16_t last_power = -1;
-            if (power != last_power) {
+            static uint32_t last_power_ms = 0;
+            if (power != last_power || (now_ms - last_power_ms) >= 500U) {
                 RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorGreen);
                 RM_RefereeSystem::RM_RefereeSystemSetWidth(25);
                 UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetArced("pwr", 1, power, power + 2, 960, 540, 380, 380));
                 last_power = power;
+                last_power_ms = now_ms;
+            }
+
+            static int16_t last_power_value = -32768;
+            static uint32_t last_power_value_ms = 0;
+            const int16_t power_value = RoundDisplayValue(GetDisplayedChassisPower());
+            if (power_value != last_power_value || (now_ms - last_power_value_ms) >= 500U) {
+                RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
+                RM_RefereeSystem::RM_RefereeSystemSetStringSize(15);
+                RM_RefereeSystem::RM_RefereeSystemSetWidth(2);
+                UI_send_queue.add(RM_RefereeSystem::RM_RefereeSystemSetInt("p", 0, power_value, ZM_of_X, ZM_of_Y));
+                last_power_value = power_value;
+                last_power_value_ms = now_ms;
             }
 
             static int16_t last_fire = -32768;
             static uint32_t last_fire_ms = 0;
             const int16_t fire_cnt = Gimbal_to_Chassis_Data.getProjectileCount();
-            const uint32_t now_ms = HAL_GetTick();
             if (fire_cnt != last_fire || (now_ms - last_fire_ms) >= 500) {
                 RM_RefereeSystem::RM_RefereeSystemSetColor(RM_RefereeSystem::ColorWhite);
                 RM_RefereeSystem::RM_RefereeSystemSetStringSize(16);
