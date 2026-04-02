@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "STM32 Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "serverpath": "C:\\Users\\25444\\.eide\\tools\\openocd_7a1adfbec_mingw32\\bin\\openocd.exe",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f4x.cfg"
+            ],
+            "executable": "${workspaceFolder}/build/Debug/SG_CHASSIS_C_2024_11_5.elf",
+            "runToEntryPoint": "main",
+            "preLaunchTask": "Build Debug"
+        }
+    ]
+}
