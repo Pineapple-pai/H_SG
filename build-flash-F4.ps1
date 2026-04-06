@@ -8,8 +8,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$buildScript = Join-Path $repoRoot "b.ps1"
-$flashScript = Join-Path $repoRoot "f.ps1"
+$buildScript = Join-Path $repoRoot "build-F4.ps1"
+$flashScript = Join-Path $repoRoot "flash-F4.ps1"
 
 & powershell -ExecutionPolicy Bypass -File $buildScript -Config $Config
 

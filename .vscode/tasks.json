@@ -9,7 +9,7 @@
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
-                "${workspaceFolder}\\b.ps1"
+                "${workspaceFolder}\\build-F4.ps1"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -35,7 +35,7 @@
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
-                "${workspaceFolder}\\f.ps1"
+                "${workspaceFolder}\\flash-F4.ps1"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -54,7 +54,7 @@
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
-                "${workspaceFolder}\\bf.ps1"
+                "${workspaceFolder}\\build-flash-F4.ps1"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
