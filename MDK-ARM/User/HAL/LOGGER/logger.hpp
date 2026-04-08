@@ -14,6 +14,7 @@
 #include "SEGGER/Config/SEGGER_RTT_Conf.h"
 #include "SEGGER/RTT/SEGGER_RTT.h"
 #include "main.h"
+#include <cstdarg>
 #include <cstdint>
 
 namespace HAL::LOGGER
@@ -74,6 +75,21 @@ class Logger
         int n = SEGGER_RTT_vprintf(0, fmt, &args);
         va_end(args);
         return n;
+    }
+
+    unsigned read(void *buffer, unsigned size, unsigned channel = 0)
+    {
+        return SEGGER_RTT_Read(channel, buffer, size);
+    }
+
+    unsigned write_raw(const void *buffer, unsigned size, unsigned channel = 0)
+    {
+        return SEGGER_RTT_Write(channel, buffer, size);
+    }
+
+    unsigned write_string(const char *str, unsigned channel = 0)
+    {
+        return SEGGER_RTT_WriteString(channel, str);
     }
 
     // 带颜色的日志方法

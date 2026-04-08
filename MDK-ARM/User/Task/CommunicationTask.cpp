@@ -10,6 +10,7 @@
 #include "../HAL/UART/uart_hal.hpp"
 #include "../BSP/state_watch.hpp"
 #include "../HAL/CAN/can_hal.hpp"
+#include "../HAL/LOGGER/logger.hpp"
 #include "../APP/UI/UI_RefreshBridge.hpp"
 #define SIZE 8
 extern uint8_t dbus_rx_buffer[18];
@@ -60,6 +61,7 @@ void Gimbal_to_Chassis::Init()
     state_watch_.UpdateLastTime();
     state_watch_.UpdateTime();
     state_watch_.CheckStatus();
+    HAL::LOGGER::Logger::getInstance().info("gimbal link init complete");
 }
 void Gimbal_to_Chassis::ResetRxAssembly()
 {
@@ -246,6 +248,9 @@ void Gimbal_to_Chassis::RecoverCanReceiver()
     HAL_CAN_Start(&hcan2);
     HAL_CAN_ActivateNotification(&hcan2, kCan2NotifyMask);
     last_frame_time = HAL_GetTick();
+    HAL::LOGGER::Logger::getInstance().warning("CAN2 receiver recovered, count=%lu last_error=0x%08lx",
+                                               static_cast<unsigned long>(recovery_count),
+                                               static_cast<unsigned long>(last_can_error));
 }
 
 void Gimbal_to_Chassis::Transmit()

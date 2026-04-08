@@ -185,6 +185,8 @@ targets:
       - ../MDK-ARM/User/APP/CommunicationTask.cpp
       - ../MDK-ARM/User/codes (1)
       - ../MDK-ARM/User/APP/RM_UI
+    settings:
+      debugger: cortex-debug
     toolchain: AC6
     toolchainConfigMap:
       AC6:

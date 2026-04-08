@@ -4,6 +4,8 @@
 #include "State.hpp"
 #include "tim.h"
 #include "../HAL/CAN/can_hal.hpp"
+#include "../HAL/LOGGER/logger.hpp"
+#include "../HAL/LOGGER/rtt_debug_service.hpp"
 #include "../HAL/UART/uart_hal.hpp"
 #include "../BSP/Motor/Dji/DjiMotor.hpp"
 #include "../BSP/Motor/Lk/Lk_motor.hpp"
@@ -63,6 +65,8 @@ void Init()
     
     // 初始化板间通信，避免启动时误判为离线
     Gimbal_to_Chassis_Data.Init();
-    
+    RTT_Debug_Init();
+    HAL::LOGGER::Logger::getInstance().info("RTT logger online, system init complete");
+
 	InitFlag = true;
 }

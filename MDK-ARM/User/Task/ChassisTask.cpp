@@ -43,6 +43,7 @@ void ChassisTask(void *argument)
 static constexpr float FOLLOW_YAW_DEADZONE_DEG = 2.0f;
 static constexpr float KEYBOARD_ROTATION_DEADZONE = 0.05f;
 static constexpr float STEER_ANGLE_SLOPE_STEP_DEG = 0.4f;
+float ROTATING_TRANSLATION_OFFSET_GAIN = 1.85f;
 
 namespace
 {
@@ -104,6 +105,19 @@ void UpdateFilteredTargets(float vx_target, float vy_target, float vw_target)
     tar_vw.u = vw_target;
     tar_vw.x1 = vw_target;
     tar_vw.x2 = 0.0f;
+}
+
+float GetCommandTransformAngleRad(bool apply_rotating_offset)
+{
+    float transform_angle = Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f;
+
+    if (apply_rotating_offset)
+    {
+        // Compensate the board-to-board delay phase in small-gyro mode.
+        transform_angle += Gimbal_to_Chassis_Data.getTargetOffsetAngle() * ROTATING_TRANSLATION_OFFSET_GAIN;
+    }
+
+    return transform_angle;
 }
 
 } // namespace
@@ -291,10 +305,11 @@ class Chassis_Task::RotatingHandler : public StateHandler
     void RotatingTarget()
     {
         // 小陀螺模式下，平移仍然按云台坐标系输入，vw 直接取旋转目标。
-        const float cos_theta = cosf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
-        const float sin_theta = sinf(Gimbal_to_Chassis_Data.getEncoderAngleErr() + 3.1415926535f);
+        const float transform_angle = GetCommandTransformAngleRad(true);
+        const float cos_theta = cosf(transform_angle);
+        const float sin_theta = sinf(transform_angle);
 
-        UpdateFilteredTargets(TAR_LX * 880.0f, TAR_LY * 880.0f, TAR_VW * 550.0f);
+        UpdateFilteredTargets(TAR_LX * 880.0f, TAR_LY * 880.0f, TAR_VW * 660.0f);
 
         const float vx_slope = ApplySlope(slope_vx, tar_vx.x1, slope_vx.Get_Out());
         const float vy_slope = ApplySlope(slope_vy, tar_vy.x1, slope_vy.Get_Out());
@@ -466,7 +481,7 @@ void Chassis_Task::Wheel_UpData()
         Chassis_Data.vw / 660.0f,
         0.0f,
         25.0f,
-        35.0f);
+        50.0f);
 
     for (int i = 0; i < 4; i++)
     {
